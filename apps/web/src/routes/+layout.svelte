@@ -1,6 +1,10 @@
 <script lang="ts">
+  import { page } from "$app/stores";
   import { onMount } from "svelte";
-  import { BarChart3, FileUp, Moon, ShieldCheck, Sun } from "@lucide/svelte";
+  import BarChart3 from "@lucide/svelte/icons/bar-chart-3";
+  import FileUp from "@lucide/svelte/icons/file-up";
+  import Moon from "@lucide/svelte/icons/moon";
+  import Sun from "@lucide/svelte/icons/sun";
   import "../app.css";
 
   type Theme = "light" | "dark";
@@ -15,7 +19,7 @@
   function setTheme(nextTheme: Theme) {
     theme = nextTheme;
     document.documentElement.dataset.theme = nextTheme;
-    localStorage.setItem("policylens-theme", nextTheme);
+    localStorage.setItem("driverslicense-theme", nextTheme);
   }
 
   function toggleTheme() {
@@ -24,18 +28,16 @@
 </script>
 
 <div class="app-shell">
-  <header class="topbar">
+  <aside class="topbar">
     <a class="brand" href="/">
-      <span class="brand-mark"><ShieldCheck size={21} /></span>
-      <span class="brand-text">
-        <strong>PolicyLens</strong>
-        <span>License intelligence</span>
-      </span>
+      <img class="brand-logo" src="/brand/driverslicense-logo.png" alt="DriversLicENSe" />
     </a>
     <div class="topbar-actions">
       <nav class="nav" aria-label="Primary">
-        <a href="/"><FileUp size={17} /> Upload</a>
-        <a href="/dashboard"><BarChart3 size={17} /> Dashboard</a>
+        <a href="/" aria-current={$page.url.pathname === "/" ? "page" : undefined}><FileUp size={17} /> Upload</a>
+        <a href="/dashboard" aria-current={$page.url.pathname.startsWith("/dashboard") ? "page" : undefined}
+          ><BarChart3 size={17} /> Dashboard</a
+        >
       </nav>
       <button
         class="theme-toggle"
@@ -51,9 +53,9 @@
         {/if}
       </button>
     </div>
-  </header>
+  </aside>
 
-  <main>
+  <main class="main-shell">
     <slot />
   </main>
 </div>

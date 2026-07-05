@@ -80,7 +80,7 @@
     </div>
   </section>
 
-  <div class="grid two">
+  <div class="grid upload-grid">
     <section class="panel">
       <div class="panel-header">
         <h2>License upload</h2>
@@ -116,35 +116,5 @@
         </button>
       </div>
     </section>
-
-    <aside class="panel">
-      <div class="panel-header">
-        <h2>Sample coverage</h2>
-      </div>
-      <div class="panel-body">
-        <div class="details-grid">
-          <div class="detail-item">
-            <span>Ohio</span>
-            <strong>REAL ID front</strong>
-          </div>
-          <div class="detail-item">
-            <span>Texas</span>
-            <strong>Under 21 front</strong>
-          </div>
-          <div class="detail-item">
-            <span>California</span>
-            <strong>Expired front</strong>
-          </div>
-          <div class="detail-item">
-            <span>New York</span>
-            <strong>Temporary document</strong>
-          </div>
-          <div class="detail-item">
-            <span>Florida</span>
-            <strong>Motorcycle endorsement</strong>
-          </div>
-        </div>
-      </div>
-    </aside>
   </div>
 </section>
