@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "synth": "npm run build --workspace @policylens/domain && npm run build --workspace @policylens/api && npm run build && cdk synth",
+    "synth": "npm run build --workspace @policylens/domain && npm run build --workspace @policylens/api && npm run build --workspace @policylens/web && npm run build && cdk synth",
     "deploy": "npm run synth && cdk deploy",
     "destroy": "cdk destroy"
   },
@@ -15,7 +15,7 @@
   "devDependencies": {
     "@types/node": "^22.10.0",
     "aws-cdk": "^2.176.0",
+    "esbuild": "^0.28.1",
     "typescript": "^5.7.0"
   }
 }
-

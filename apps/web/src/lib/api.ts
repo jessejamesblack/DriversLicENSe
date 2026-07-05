@@ -1,6 +1,6 @@
 import type { DashboardSummary, DocumentRecord, DocumentType } from "@policylens/domain";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:3000";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? (import.meta.env.DEV ? "http://localhost:3000" : "");
 
 export interface UploadResponse {
   documentId: string;
@@ -47,4 +47,3 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
   return response.json() as Promise<T>;
 }
-
