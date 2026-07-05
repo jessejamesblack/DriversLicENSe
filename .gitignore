@@ -1,0 +1,12 @@
+node_modules/
+dist/
+build/
+.svelte-kit/
+.vercel/
+.env
+.env.local
+.data/
+coverage/
+cdk.out/
+*.log
+docs/demo-script.md
