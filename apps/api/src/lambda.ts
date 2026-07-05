@@ -7,10 +7,10 @@ let cachedHandler: Handler | undefined;
 
 async function bootstrap(): Promise<Handler> {
   const app = await createPolicyLensApp();
-  await app.init();
   const fastifyApp = app.getHttpAdapter().getInstance();
-  await fastifyApp.ready();
-  return awsLambdaFastify(fastifyApp as never) as Handler;
+  const proxy = awsLambdaFastify(fastifyApp as never) as Handler;
+  await app.init();
+  return proxy;
 }
 
 export const handler: Handler = async (event, context, callback) => {

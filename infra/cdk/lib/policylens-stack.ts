@@ -43,7 +43,7 @@ export class PolicyLensStack extends Stack {
 
     const apiFunction = new NodejsFunction(this, "ApiFunction", {
       runtime: Runtime.NODEJS_20_X,
-      handler: "lambda.handler",
+      handler: "handler",
       entry: join(__dirname, "../../../../apps/api/src/lambda.ts"),
       timeout: Duration.seconds(30),
       memorySize: 512,
