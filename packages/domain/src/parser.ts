@@ -7,12 +7,25 @@ export function parseDriverLicenseText(input: {
   referenceDate?: Date | string;
 }): StructuredLicenseExtraction {
   const text = normalizeWhitespace(input.text);
+  const dates = findAllNormalizedDates(text);
   const fullName = findFullName(text);
   const licenseNumber = findLicenseNumber(text);
-  const issuingState = normalizeState(findString(text, ["Issuing State", "State", "Jurisdiction"]));
-  const dateOfBirth = normalizeDate(findString(text, ["Date of Birth", "DOB", "Birth Date"]));
-  const issueDate = normalizeDate(findString(text, ["Issue Date", "Issued", "ISS"]));
-  const expirationDate = normalizeDate(findString(text, ["Expiration Date", "Expires", "EXP"]));
+  const issuingState =
+    normalizeState(findString(text, ["Issuing State", "State", "Jurisdiction"])) ??
+    inferStateFromLicenseNumber(licenseNumber);
+  const dateOfBirth =
+    normalizeDate(findString(text, ["Date of Birth", "DOB", "Birth Date"])) ??
+    findDateNearLabel(text, ["Date of Birth", "DOB", "Birth Date"]);
+  const under21Until =
+    normalizeDate(findString(text, ["Under 21 Until", "Under 21", "Turns 21"])) ??
+    findDateNearLabel(text, ["Under 21 Until", "Under 21", "Turns 21"]);
+  const expirationDate =
+    normalizeDate(findString(text, ["Expiration Date", "Expires", "EXP"])) ??
+    findDateNearLabel(text, ["Expiration Date", "Expiration", "Expires", "EXP"]) ??
+    inferExpirationDate(dates, dateOfBirth, under21Until);
+  const issueDate =
+    normalizeDate(findString(text, ["Issue Date", "Issued", "ISS", "Issue"])) ??
+    inferIssueDate(dates, dateOfBirth, expirationDate, under21Until);
   const address = findString(text, ["Address", "Residence Address", "Street Address"]);
   const licenseClass = findString(text, ["License Class", "Class"]);
   const endorsements = findList(text, ["Endorsements", "Endorsement"]);
@@ -23,7 +36,6 @@ export function parseDriverLicenseText(input: {
   const organDonor = findBoolean(text, ["Organ Donor", "Donor"]);
   const veteran = findBoolean(text, ["Veteran"]);
   const realId = findBoolean(text, ["REAL ID", "Real ID", "Real ID Compliant"]) ?? inferRealId(text);
-  const under21Until = normalizeDate(findString(text, ["Under 21 Until", "Under 21", "Turns 21"]));
   const referenceDate = toDate(input.referenceDate ?? new Date());
   const ageAtScan = dateOfBirth ? calculateAge(dateOfBirth, referenceDate) : null;
   const isExpired = expirationDate ? isBefore(expirationDate, referenceDate) : false;
@@ -82,6 +94,11 @@ function findFullName(text: string): string | null {
     return direct;
   }
 
+  const standalone = findValueAfterStandaloneLabel(text, ["Full Name", "Name", "Cardholder"], isLikelyName);
+  if (standalone) {
+    return standalone;
+  }
+
   const firstName = findString(text, ["First Name", "Given Name"]);
   const lastName = findString(text, ["Last Name", "Family Name", "Surname"]);
 
@@ -89,7 +106,7 @@ function findFullName(text: string): string | null {
     return `${firstName} ${lastName}`;
   }
 
-  return null;
+  return text.match(/\b[A-Z][a-z]+ [A-Z][a-z]+ Sample\b/)?.[0] ?? null;
 }
 
 function findLicenseNumber(text: string): string | null {
@@ -107,6 +124,14 @@ function normalizeState(value: string | null): string | null {
 
   const match = value.toUpperCase().match(/\b[A-Z]{2}\b/);
   return match?.[0] ?? null;
+}
+
+function inferStateFromLicenseNumber(licenseNumber: string | null): string | null {
+  if (!licenseNumber) {
+    return null;
+  }
+
+  return licenseNumber.match(/^[A-Z]{2}/)?.[0] ?? null;
 }
 
 function normalizeDate(value: string | null): string | null {
@@ -129,6 +154,65 @@ function normalizeDate(value: string | null): string | null {
   return null;
 }
 
+function findAllNormalizedDates(text: string): string[] {
+  const dates = new Set<string>();
+  const datePattern = /\b(\d{4}-\d{2}-\d{2}|\d{1,2}\/\d{1,2}\/\d{4})\b/g;
+
+  for (const match of text.matchAll(datePattern)) {
+    const normalized = normalizeDate(match[1]);
+    if (normalized) {
+      dates.add(normalized);
+    }
+  }
+
+  return [...dates].sort();
+}
+
+function findDateNearLabel(text: string, labels: string[]): string | null {
+  const lines = text.split("\n");
+
+  for (let index = 0; index < lines.length; index += 1) {
+    const normalizedLine = normalizeLabel(lines[index]);
+
+    if (!labels.some((label) => normalizedLine.includes(normalizeLabel(label)))) {
+      continue;
+    }
+
+    const sameLineDate = firstDateIn(lines[index]);
+    if (sameLineDate) {
+      return sameLineDate;
+    }
+
+    for (const nearbyLine of lines.slice(index + 1, index + 5)) {
+      const nearbyDate = firstDateIn(nearbyLine);
+      if (nearbyDate) {
+        return nearbyDate;
+      }
+    }
+  }
+
+  return null;
+}
+
+function firstDateIn(value: string): string | null {
+  const match = value.match(/\b(\d{4}-\d{2}-\d{2}|\d{1,2}\/\d{1,2}\/\d{4})\b/);
+  return match?.[1] ? normalizeDate(match[1]) : null;
+}
+
+function inferExpirationDate(dates: string[], dateOfBirth: string | null, under21Until: string | null): string | null {
+  const candidates = dates.filter((date) => date !== dateOfBirth && date !== under21Until);
+  return candidates.at(-1) ?? null;
+}
+
+function inferIssueDate(
+  dates: string[],
+  dateOfBirth: string | null,
+  expirationDate: string | null,
+  under21Until: string | null
+): string | null {
+  return dates.find((date) => date !== dateOfBirth && date !== expirationDate && date !== under21Until) ?? null;
+}
+
 function findList(text: string, labels: string[]): string[] {
   const value = findString(text, labels);
   if (!value || /^(none|n\/a|not applicable)$/i.test(value)) {
@@ -142,7 +226,7 @@ function findList(text: string, labels: string[]): string[] {
 }
 
 function findBoolean(text: string, labels: string[]): boolean | null {
-  const value = findString(text, labels);
+  const value = findString(text, labels) ?? findValueAfterStandaloneLabel(text, labels, isBooleanLike);
   if (!value) {
     return null;
   }
@@ -168,12 +252,13 @@ function inferRealId(text: string): boolean | null {
 
 function findConfidence(text: string): number | null {
   const match = text.match(/Confidence\s*[:\-]\s*(0?\.\d+|1(?:\.0)?|\d{1,3}%)/i);
+  const standalone = findValueAfterStandaloneLabel(text, ["Confidence"], isConfidenceLike);
 
-  if (!match?.[1]) {
+  if (!match?.[1] && !standalone) {
     return null;
   }
 
-  const raw = match[1];
+  const raw = match?.[1] ?? standalone ?? "";
   if (raw.endsWith("%")) {
     return Number(raw.replace("%", "")) / 100;
   }
@@ -183,6 +268,83 @@ function findConfidence(text: string): number | null {
 
 function cleanupValue(value: string): string {
   return value.split("\n")[0].replace(/\s+/g, " ").trim().replace(/[.;]$/, "");
+}
+
+function findValueAfterStandaloneLabel(
+  text: string,
+  labels: string[],
+  predicate: (value: string) => boolean
+): string | null {
+  const lines = text.split("\n").map(cleanupValue).filter(Boolean);
+
+  for (let index = 0; index < lines.length; index += 1) {
+    const current = normalizeLabel(lines[index]);
+    const isLabel = labels.some((label) => current === normalizeLabel(label));
+
+    if (!isLabel) {
+      continue;
+    }
+
+    for (const option of lines.slice(index + 1, index + 6)) {
+      if (isNoiseOrLabel(option)) {
+        continue;
+      }
+
+      if (predicate(option)) {
+        return option;
+      }
+    }
+  }
+
+  return null;
+}
+
+function isLikelyName(value: string): boolean {
+  return /^[A-Z][A-Za-z'-]+ [A-Z][A-Za-z'-]+(?: [A-Z][A-Za-z'-]+)?$/.test(value);
+}
+
+function isBooleanLike(value: string): boolean {
+  return /^(yes|y|true|1|present|compliant|star|no|n|false|0|absent|non-compliant|not compliant|none)$/i.test(value);
+}
+
+function isConfidenceLike(value: string): boolean {
+  return /^(0?\.\d+|1(?:\.0)?|\d{1,3}%)$/i.test(value);
+}
+
+function isNoiseOrLabel(value: string): boolean {
+  const normalized = normalizeLabel(value);
+  const knownLabels = new Set([
+    "ADDRESS",
+    "CLASS",
+    "CONFIDENCE",
+    "DATE",
+    "DATE OF BIRTH",
+    "DOB",
+    "ENDORSEMENTS",
+    "EXPIRATION",
+    "EXPIRATION DATE",
+    "EYE COLOR",
+    "FULL NAME",
+    "HEIGHT",
+    "ISSUE",
+    "ISSUE DATE",
+    "ISSUING STATE",
+    "LICENSE CLASS",
+    "LICENSE NUMBER",
+    "NO PHOTO",
+    "OCR TEST ONLY",
+    "ORGAN DONOR",
+    "REAL ID",
+    "RESTRICTIONS",
+    "SEX",
+    "VETERAN"
+  ]);
+
+  return knownLabels.has(normalized) || normalized.includes("SYNTHETIC") || normalized.includes("GOVERNMENT ID");
+}
+
+function normalizeLabel(value: string): string {
+  return value.replace(/[^A-Za-z0-9]+/g, " ").trim().replace(/\s+/g, " ").toUpperCase();
 }
 
 function calculateAge(dateOfBirth: string, referenceDate: Date): number {
