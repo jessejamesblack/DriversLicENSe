@@ -6,6 +6,7 @@ describe("chartData", () => {
   it("formats metrics and builds stable chart labels", () => {
     const summary: DashboardSummary = {
       documentsProcessed: 1,
+      activeFilters: {},
       averageConfidence: 0.91,
       warningCount: 0,
       realIdCount: 1,

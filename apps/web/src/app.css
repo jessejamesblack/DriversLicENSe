@@ -258,7 +258,7 @@ a {
 .workflow-steps {
   display: grid;
   gap: 0.75rem;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   position: relative;
 }
 
@@ -368,6 +368,13 @@ a {
   padding: 0.58rem 0.8rem;
 }
 
+.field-hint {
+  color: var(--muted);
+  font-size: 0.84rem;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
 .field input:focus,
 .field select:focus {
   border-color: var(--accent);
@@ -393,6 +400,49 @@ a {
 .secondary:hover {
   border-color: var(--accent);
   color: var(--accent);
+}
+
+.camera-actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+}
+
+.modal-backdrop {
+  align-items: center;
+  background: rgba(3, 7, 18, 0.62);
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  padding: 1rem;
+  position: fixed;
+  z-index: 50;
+}
+
+.camera-modal {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: var(--shadow-strong);
+  display: grid;
+  gap: 1rem;
+  max-width: 44rem;
+  overflow: hidden;
+  width: min(100%, 44rem);
+}
+
+.camera-modal video {
+  aspect-ratio: 4 / 3;
+  background: var(--code-bg);
+  display: block;
+  object-fit: cover;
+  width: 100%;
+}
+
+.camera-modal .camera-actions {
+  justify-content: flex-end;
+  padding: 0 1rem 1rem;
 }
 
 .danger {
@@ -438,6 +488,23 @@ a {
 .status.failed {
   background: var(--status-failed-bg);
   color: var(--status-failed-text);
+}
+
+.status.queued,
+.status.retrying,
+.status.dead_letter {
+  background: var(--status-warning-bg);
+  color: var(--status-warning-text);
+}
+
+.filter-panel {
+  margin-bottom: 1rem;
+}
+
+.filter-grid {
+  display: grid;
+  gap: 0.85rem;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
 .metric-grid {
@@ -595,6 +662,7 @@ pre {
   .chart-grid,
   .metric-grid,
   .details-grid,
+  .filter-grid,
   .workflow-steps {
     grid-template-columns: 1fr;
   }

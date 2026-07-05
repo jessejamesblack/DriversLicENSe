@@ -1,4 +1,10 @@
-import type { DashboardSummary, DocumentRecord, DocumentType } from "@driverslicense/domain";
+import type {
+  DashboardFilters,
+  DashboardSummary,
+  DocumentRecord,
+  DocumentType,
+  LicenseFieldName
+} from "@driverslicense/domain";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? (import.meta.env.DEV ? "http://localhost:3000" : "");
 
@@ -25,6 +31,25 @@ export async function processDocument(documentId: string) {
   });
 }
 
+export async function adjudicateDocument(input: {
+  documentId: string;
+  field: LicenseFieldName;
+  value: unknown;
+  note?: string;
+}): Promise<DocumentRecord> {
+  return request<DocumentRecord>(`/documents/${input.documentId}/adjudicate`, {
+    method: "POST",
+    headers: {
+      "content-type": "application/json"
+    },
+    body: JSON.stringify({
+      field: input.field,
+      value: input.value,
+      note: input.note ?? null
+    })
+  });
+}
+
 export async function getDocument(documentId: string): Promise<DocumentRecord> {
   return request<DocumentRecord>(`/documents/${documentId}`);
 }
@@ -33,8 +58,17 @@ export async function getDocuments(): Promise<DocumentRecord[]> {
   return request<DocumentRecord[]>("/documents");
 }
 
-export async function getDashboardSummary(): Promise<DashboardSummary> {
-  return request<DashboardSummary>("/dashboard/summary");
+export async function getDashboardSummary(filters: DashboardFilters = {}): Promise<DashboardSummary> {
+  const search = new URLSearchParams();
+
+  for (const [key, value] of Object.entries(filters)) {
+    if (value) {
+      search.set(key, String(value));
+    }
+  }
+
+  const queryString = search.toString();
+  return request<DashboardSummary>(`/dashboard/summary${queryString ? `?${queryString}` : ""}`);
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
