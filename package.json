@@ -2,7 +2,7 @@
   "name": "policylens",
   "version": "0.1.0",
   "private": true,
-  "description": "AI-assisted insurance document ingestion and data quality dashboard.",
+  "description": "AI-assisted driver license OCR, validation, and data quality dashboard.",
   "workspaces": [
     "apps/*",
     "packages/*",

@@ -1,0 +1,18 @@
+{
+  "documentType": "LicenseFront",
+  "expectedStatus": "VALID",
+  "extraction": {
+    "fullName": "Jordan Avery Sample",
+    "licenseNumber": "OH1234567",
+    "issuingState": "OH",
+    "dateOfBirth": "1990-09-12",
+    "expirationDate": "2030-07-01",
+    "realId": true,
+    "organDonor": true,
+    "veteran": false,
+    "ageAtScan": 35,
+    "isExpired": false,
+    "confidenceScore": 0.91
+  },
+  "warningCategories": []
+}

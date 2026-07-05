@@ -1,4 +1,4 @@
-export const DOCUMENT_TYPES = ["Policy", "Submission", "Claim", "Endorsement"] as const;
+export const DOCUMENT_TYPES = ["LicenseFront", "LicenseBack", "TemporaryLicense", "LearnerPermit"] as const;
 export type DocumentType = (typeof DOCUMENT_TYPES)[number];
 
 export const PROCESSING_STATUSES = ["UPLOADED", "PROCESSING", "PROCESSED", "FAILED"] as const;
@@ -8,12 +8,13 @@ export const VALIDATION_STATUSES = ["VALID", "WARNING", "FAILED"] as const;
 export type ValidationStatus = (typeof VALIDATION_STATUSES)[number];
 
 export const WARNING_CATEGORIES = [
-  "MISSING_POLICY_NUMBER",
-  "MISSING_LINE_OF_BUSINESS",
-  "MISSING_STATE",
+  "MISSING_LICENSE_NUMBER",
+  "MISSING_DATE_OF_BIRTH",
+  "MISSING_EXPIRATION_DATE",
+  "MISSING_ISSUING_STATE",
+  "EXPIRED_LICENSE",
+  "UNDER_AGE_21",
   "LOW_CONFIDENCE",
-  "INVALID_PREMIUM",
-  "INVALID_DATE_RANGE",
   "SCHEMA_ERROR"
 ] as const;
 export type WarningCategory = (typeof WARNING_CATEGORIES)[number];
@@ -25,22 +26,32 @@ export interface ValidationWarning {
   severity: "warning" | "error";
 }
 
-export interface StructuredPolicyExtraction {
-  insuredName: string | null;
-  policyNumber: string | null;
-  lineOfBusiness: string | null;
-  state: string | null;
-  effectiveDate: string | null;
+export interface StructuredLicenseExtraction {
+  fullName: string | null;
+  licenseNumber: string | null;
+  issuingState: string | null;
+  dateOfBirth: string | null;
+  issueDate: string | null;
   expirationDate: string | null;
-  premium: number | null;
-  perOccurrenceLimit: number | null;
-  aggregateLimit: number | null;
+  address: string | null;
+  licenseClass: string | null;
+  endorsements: string[];
+  restrictions: string[];
+  sex: string | null;
+  height: string | null;
+  eyeColor: string | null;
+  organDonor: boolean | null;
+  veteran: boolean | null;
+  realId: boolean | null;
+  under21Until: string | null;
+  ageAtScan: number | null;
+  isExpired: boolean;
   confidenceScore: number;
   warnings: ValidationWarning[];
 }
 
 export interface ValidatedExtraction {
-  extraction: StructuredPolicyExtraction;
+  extraction: StructuredLicenseExtraction;
   status: ValidationStatus;
   warnings: ValidationWarning[];
 }
@@ -73,7 +84,7 @@ export interface DocumentOcrAdapter {
 }
 
 export interface StructuredExtractionAdapter {
-  extractFields(input: StructuredExtractionInput): Promise<StructuredPolicyExtraction>;
+  extractFields(input: StructuredExtractionInput): Promise<StructuredLicenseExtraction>;
 }
 
 export interface DocumentStorageAdapter {
@@ -101,7 +112,7 @@ export interface DocumentRecord {
   storageKey: string;
   status: ProcessingStatus;
   validationStatus: ValidationStatus | null;
-  extraction: StructuredPolicyExtraction | null;
+  extraction: StructuredLicenseExtraction | null;
   rawOcr: unknown | null;
   rawExtraction: unknown | null;
   errorMessage: string | null;
@@ -111,12 +122,16 @@ export interface DocumentRecord {
 
 export interface DashboardSummary {
   documentsProcessed: number;
-  totalPremium: number;
   averageConfidence: number;
   warningCount: number;
-  premiumByLineOfBusiness: Array<{
-    lineOfBusiness: string;
-    premium: number;
+  realIdCount: number;
+  organDonorCount: number;
+  veteranCount: number;
+  expiredCount: number;
+  under21Count: number;
+  averageAge: number;
+  documentsByIssuingState: Array<{
+    issuingState: string;
     documentCount: number;
   }>;
   documentsByStatus: Array<{
@@ -130,6 +145,10 @@ export interface DashboardSummary {
   }>;
   warningCountByCategory: Array<{
     category: WarningCategory;
+    count: number;
+  }>;
+  expirationBuckets: Array<{
+    bucket: string;
     count: number;
   }>;
 }

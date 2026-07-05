@@ -4,10 +4,10 @@
   import type { DocumentType } from "@policylens/domain";
   import { processDocument, uploadDocument } from "$lib/api";
 
-  const DOCUMENT_TYPE_OPTIONS: DocumentType[] = ["Policy", "Submission", "Claim", "Endorsement"];
+  const DOCUMENT_TYPE_OPTIONS: DocumentType[] = ["LicenseFront", "LicenseBack", "TemporaryLicense", "LearnerPermit"];
 
   let selectedFile: File | null = null;
-  let documentType: DocumentType = "Policy";
+  let documentType: DocumentType = "LicenseFront";
   let isSubmitting = false;
   let errorMessage = "";
 
@@ -19,7 +19,7 @@
 
   async function submit() {
     if (!selectedFile) {
-      errorMessage = "Choose a synthetic document before submitting.";
+      errorMessage = "Choose a synthetic license scan before submitting.";
       return;
     }
 
@@ -36,13 +36,17 @@
       isSubmitting = false;
     }
   }
+
+  function formatDocumentType(type: DocumentType): string {
+    return type.replace(/([a-z])([A-Z])/g, "$1 $2");
+  }
 </script>
 
 <section class="page">
   <div class="page-header">
     <div>
-      <h1>Ingest an insurance document</h1>
-      <p>Upload a synthetic policy, submission, claim, or endorsement and process it into validated, warehouse-shaped data.</p>
+      <h1>Ingest a driver license scan</h1>
+      <p>Upload a synthetic driver license scan and process it into validated, warehouse-shaped data.</p>
     </div>
   </div>
 
@@ -61,7 +65,7 @@
           <label for="documentType">Document type</label>
           <select id="documentType" bind:value={documentType}>
             {#each DOCUMENT_TYPE_OPTIONS as type}
-              <option value={type}>{type}</option>
+              <option value={type}>{formatDocumentType(type)}</option>
             {/each}
           </select>
         </div>
@@ -90,24 +94,24 @@
       <div class="panel-body">
         <div class="details-grid">
           <div class="detail-item">
-            <span>General Liability</span>
-            <strong>Valid policy</strong>
+            <span>Ohio</span>
+            <strong>REAL ID front</strong>
           </div>
           <div class="detail-item">
-            <span>Property</span>
-            <strong>Valid submission</strong>
+            <span>Texas</span>
+            <strong>Under 21 front</strong>
           </div>
           <div class="detail-item">
-            <span>Commercial Auto</span>
-            <strong>Valid policy</strong>
+            <span>California</span>
+            <strong>Expired front</strong>
           </div>
           <div class="detail-item">
-            <span>Cyber</span>
-            <strong>Missing policy number</strong>
+            <span>New York</span>
+            <strong>Temporary document</strong>
           </div>
           <div class="detail-item">
-            <span>Workers Comp</span>
-            <strong>Low confidence</strong>
+            <span>Florida</span>
+            <strong>Motorcycle endorsement</strong>
           </div>
         </div>
       </div>

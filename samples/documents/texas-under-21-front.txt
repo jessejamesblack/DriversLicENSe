@@ -1,0 +1,20 @@
+SYNTHETIC SAMPLE - NOT A GOVERNMENT ID
+Document Type: License Front
+Full Name: Riley Morgan Sample
+License Number: TX8844221
+Issuing State: TX
+Date of Birth: 2008-08-20
+Issue Date: 2025-08-20
+Expiration Date: 2030-08-20
+Address: 200 Demo Road, Austin, TX
+License Class: C
+Endorsements: None
+Restrictions: Under 21, Corrective lenses
+Sex: F
+Height: 5-05
+Eye Color: HAZ
+Organ Donor: No
+Veteran: No
+REAL ID: Yes
+Under 21 Until: 2029-08-20
+Confidence: 0.88

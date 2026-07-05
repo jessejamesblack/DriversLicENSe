@@ -1,0 +1,18 @@
+SYNTHETIC SAMPLE - NOT A GOVERNMENT ID
+Document Type: License Front
+Full Name: Harper Lee Sample
+Issuing State: GA
+Date of Birth: 1975-01-30
+Issue Date: 2025-01-30
+Expiration Date: 2033-01-30
+Address: 1000 Demo Drive, Atlanta, GA
+License Class: C
+Endorsements: None
+Restrictions: None
+Sex: F
+Height: 5-04
+Eye Color: BRO
+Organ Donor: No
+Veteran: Yes
+REAL ID: No
+Confidence: 0.85

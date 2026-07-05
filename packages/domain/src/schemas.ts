@@ -11,17 +11,27 @@ export const validationWarningSchema = z.object({
 export const documentTypeSchema = z.enum(DOCUMENT_TYPES);
 export const validationStatusSchema = z.enum(VALIDATION_STATUSES);
 
-export const structuredPolicyExtractionSchema = z
+export const structuredLicenseExtractionSchema = z
   .object({
-    insuredName: z.string().trim().min(1).nullable(),
-    policyNumber: z.string().trim().min(1).nullable(),
-    lineOfBusiness: z.string().trim().min(1).nullable(),
-    state: z.string().trim().length(2).nullable(),
-    effectiveDate: z.string().trim().regex(/^\d{4}-\d{2}-\d{2}$/).nullable(),
+    fullName: z.string().trim().min(1).nullable(),
+    licenseNumber: z.string().trim().min(1).nullable(),
+    issuingState: z.string().trim().length(2).nullable(),
+    dateOfBirth: z.string().trim().regex(/^\d{4}-\d{2}-\d{2}$/).nullable(),
+    issueDate: z.string().trim().regex(/^\d{4}-\d{2}-\d{2}$/).nullable(),
     expirationDate: z.string().trim().regex(/^\d{4}-\d{2}-\d{2}$/).nullable(),
-    premium: z.number().nullable(),
-    perOccurrenceLimit: z.number().nullable(),
-    aggregateLimit: z.number().nullable(),
+    address: z.string().trim().min(1).nullable(),
+    licenseClass: z.string().trim().min(1).nullable(),
+    endorsements: z.array(z.string().trim().min(1)),
+    restrictions: z.array(z.string().trim().min(1)),
+    sex: z.string().trim().min(1).nullable(),
+    height: z.string().trim().min(1).nullable(),
+    eyeColor: z.string().trim().min(1).nullable(),
+    organDonor: z.boolean().nullable(),
+    veteran: z.boolean().nullable(),
+    realId: z.boolean().nullable(),
+    under21Until: z.string().trim().regex(/^\d{4}-\d{2}-\d{2}$/).nullable(),
+    ageAtScan: z.number().int().min(0).nullable(),
+    isExpired: z.boolean(),
     confidenceScore: z.number().min(0).max(1),
     warnings: z.array(validationWarningSchema)
   })
@@ -39,7 +49,7 @@ export const documentRecordSchema = z.object({
   storageKey: z.string(),
   status: z.enum(["UPLOADED", "PROCESSING", "PROCESSED", "FAILED"]),
   validationStatus: validationStatusSchema.nullable(),
-  extraction: structuredPolicyExtractionSchema.nullable(),
+  extraction: structuredLicenseExtractionSchema.nullable(),
   rawOcr: z.any().nullable(),
   rawExtraction: z.any().nullable(),
   errorMessage: z.string().nullable(),

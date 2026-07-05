@@ -1,0 +1,14 @@
+{
+  "documentType": "LicenseFront",
+  "expectedStatus": "VALID",
+  "extraction": {
+    "fullName": "Morgan Blake Sample",
+    "licenseNumber": "FL9033775",
+    "issuingState": "FL",
+    "endorsements": ["Motorcycle"],
+    "organDonor": true,
+    "veteran": true,
+    "realId": true
+  },
+  "warningCategories": []
+}

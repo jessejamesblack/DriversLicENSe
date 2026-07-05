@@ -1,0 +1,18 @@
+SYNTHETIC SAMPLE - NOT A GOVERNMENT ID
+Document Type: License Front
+Full Name: Skyler Reed Sample
+License Number: CO8833012
+Issuing State: CO
+Issue Date: 2026-06-05
+Expiration Date: 2032-06-05
+Address: 800 Practice Place, Denver, CO
+License Class: R
+Endorsements: None
+Restrictions: None
+Sex: F
+Height: 5-08
+Eye Color: BLU
+Organ Donor: Yes
+Veteran: No
+REAL ID: Yes
+Confidence: 0.89

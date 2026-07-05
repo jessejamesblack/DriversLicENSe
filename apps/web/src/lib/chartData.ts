@@ -3,25 +3,17 @@ import type { DashboardSummary } from "@policylens/domain";
 
 const palette = ["#117c73", "#3568a6", "#a66f00", "#6b7280", "#b23b3b"];
 
-export function currency(value: number): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 0
-  }).format(value);
-}
-
 export function percent(value: number): string {
   return `${Math.round(value * 100)}%`;
 }
 
-export function premiumByLineChart(summary: DashboardSummary): ChartData<"bar"> {
+export function documentsByIssuingStateChart(summary: DashboardSummary): ChartData<"bar"> {
   return {
-    labels: summary.premiumByLineOfBusiness.map((item) => item.lineOfBusiness),
+    labels: summary.documentsByIssuingState.map((item) => item.issuingState),
     datasets: [
       {
-        label: "Premium",
-        data: summary.premiumByLineOfBusiness.map((item) => item.premium),
+        label: "Documents",
+        data: summary.documentsByIssuingState.map((item) => item.documentCount),
         backgroundColor: palette[0]
       }
     ]
@@ -54,3 +46,15 @@ export function confidenceByDocumentTypeChart(summary: DashboardSummary): ChartD
   };
 }
 
+export function expirationBucketChart(summary: DashboardSummary): ChartData<"bar"> {
+  return {
+    labels: summary.expirationBuckets.map((item) => item.bucket),
+    datasets: [
+      {
+        label: "Documents",
+        data: summary.expirationBuckets.map((item) => item.count),
+        backgroundColor: palette[2]
+      }
+    ]
+  };
+}

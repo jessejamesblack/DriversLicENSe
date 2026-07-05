@@ -3,7 +3,7 @@ import {
   DocumentRecord,
   DocumentRepository,
   DocumentStorageAdapter,
-  parseInsuranceDocumentText
+  parseDriverLicenseText
 } from "@policylens/domain";
 import { DocumentsService } from "./documents.service";
 import { MockOcrAdapter } from "../infrastructure/mock-ocr.adapter";
@@ -60,18 +60,23 @@ describe("DocumentsService", () => {
     );
 
     const upload = await service.upload({
-      filename: "general-liability-policy.txt",
-      documentType: "Policy",
+      filename: "ohio-real-id-front.txt",
+      documentType: "LicenseFront",
       contentType: "text/plain",
-      bytes: Buffer.from(`Named Insured: Acme Logistics LLC
-Policy Number: GL-123456
-Line of Business: General Liability
-Risk State: IN
-Effective Date: 2026-07-01
-Expiration Date: 2027-07-01
-Total Premium: $125,000
-Per Occurrence Limit: $1,000,000
-Aggregate Limit: $2,000,000
+      bytes: Buffer.from(`SYNTHETIC SAMPLE - NOT A GOVERNMENT ID
+Full Name: Jordan Avery Sample
+License Number: OH1234567
+Issuing State: OH
+Date of Birth: 1990-09-12
+Issue Date: 2026-07-01
+Expiration Date: 2030-07-01
+Address: 100 Sample Lane, Columbus, OH
+License Class: D
+Endorsements: M
+Restrictions: Corrective lenses
+Organ Donor: Yes
+Veteran: No
+REAL ID: Yes
 Confidence: 0.91`)
     });
 
@@ -80,19 +85,20 @@ Confidence: 0.91`)
 
     expect(processed.status).toBe("PROCESSED");
     expect(processed.validationStatus).toBe("VALID");
-    expect(processed.extraction?.premium).toBe(125000);
+    expect(processed.extraction?.licenseNumber).toBe("OH1234567");
+    expect(processed.extraction?.issuingState).toBe("OH");
     expect(summary.documentsProcessed).toBe(1);
-    expect(summary.totalPremium).toBe(125000);
+    expect(summary.realIdCount).toBe(1);
   });
 
   it("keeps deterministic extraction behavior available for the harness", () => {
-    const extraction = parseInsuranceDocumentText({
-      documentType: "Submission",
-      text: "Applicant: Blue Harbor Payments\nLine of Business: Cyber\nPrimary State: NY\nConfidence: 0.84"
+    const extraction = parseDriverLicenseText({
+      documentType: "TemporaryLicense",
+      referenceDate: "2026-07-04T00:00:00.000Z",
+      text: "Full Name: Avery Chen Sample\nIssuing State: NY\nDate of Birth: 1999-12-02\nConfidence: 0.84"
     });
 
-    expect(extraction.policyNumber).toBeNull();
-    expect(extraction.lineOfBusiness).toBe("Cyber");
+    expect(extraction.licenseNumber).toBeNull();
+    expect(extraction.issuingState).toBe("NY");
   });
 });
-

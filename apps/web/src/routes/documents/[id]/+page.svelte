@@ -1,16 +1,16 @@
 <script lang="ts">
   import { page } from "$app/stores";
   import { AlertCircle, CheckCircle2, RefreshCw } from "@lucide/svelte";
-  import type { DocumentRecord, StructuredPolicyExtraction } from "@policylens/domain";
+  import type { DocumentRecord, StructuredLicenseExtraction } from "@policylens/domain";
   import { getDocument, processDocument } from "$lib/api";
-  import { currency, percent } from "$lib/chartData";
+  import { percent } from "$lib/chartData";
 
   let documentRecord: DocumentRecord | null = null;
   let isLoading = true;
   let isProcessing = false;
   let errorMessage = "";
 
-  $: extraction = documentRecord?.extraction as StructuredPolicyExtraction | null | undefined;
+  $: extraction = documentRecord?.extraction as StructuredLicenseExtraction | null | undefined;
 
   async function loadDocument() {
     isLoading = true;
@@ -37,6 +37,22 @@
     } finally {
       isProcessing = false;
     }
+  }
+
+  function formatBoolean(value: boolean | null | undefined): string {
+    if (value === true) {
+      return "Yes";
+    }
+
+    if (value === false) {
+      return "No";
+    }
+
+    return "Missing";
+  }
+
+  function formatList(values: string[]): string {
+    return values.length ? values.join(", ") : "None";
   }
 
   $: if ($page.params.id) {
@@ -76,15 +92,25 @@
         <div class="panel-body">
           {#if extraction}
             <div class="details-grid">
-              <div class="detail-item"><span>Insured</span><strong>{extraction.insuredName ?? "Missing"}</strong></div>
-              <div class="detail-item"><span>Policy number</span><strong>{extraction.policyNumber ?? "Missing"}</strong></div>
-              <div class="detail-item"><span>Line of business</span><strong>{extraction.lineOfBusiness ?? "Missing"}</strong></div>
-              <div class="detail-item"><span>State</span><strong>{extraction.state ?? "Missing"}</strong></div>
-              <div class="detail-item"><span>Effective date</span><strong>{extraction.effectiveDate ?? "Missing"}</strong></div>
+              <div class="detail-item"><span>Full name</span><strong>{extraction.fullName ?? "Missing"}</strong></div>
+              <div class="detail-item"><span>License number</span><strong>{extraction.licenseNumber ?? "Missing"}</strong></div>
+              <div class="detail-item"><span>Issuing state</span><strong>{extraction.issuingState ?? "Missing"}</strong></div>
+              <div class="detail-item"><span>Date of birth</span><strong>{extraction.dateOfBirth ?? "Missing"}</strong></div>
+              <div class="detail-item"><span>Issue date</span><strong>{extraction.issueDate ?? "Missing"}</strong></div>
               <div class="detail-item"><span>Expiration date</span><strong>{extraction.expirationDate ?? "Missing"}</strong></div>
-              <div class="detail-item"><span>Premium</span><strong>{currency(extraction.premium ?? 0)}</strong></div>
-              <div class="detail-item"><span>Per occurrence limit</span><strong>{currency(extraction.perOccurrenceLimit ?? 0)}</strong></div>
-              <div class="detail-item"><span>Aggregate limit</span><strong>{currency(extraction.aggregateLimit ?? 0)}</strong></div>
+              <div class="detail-item"><span>Address</span><strong>{extraction.address ?? "Missing"}</strong></div>
+              <div class="detail-item"><span>Class</span><strong>{extraction.licenseClass ?? "Missing"}</strong></div>
+              <div class="detail-item"><span>Endorsements</span><strong>{formatList(extraction.endorsements)}</strong></div>
+              <div class="detail-item"><span>Restrictions</span><strong>{formatList(extraction.restrictions)}</strong></div>
+              <div class="detail-item"><span>Sex</span><strong>{extraction.sex ?? "Missing"}</strong></div>
+              <div class="detail-item"><span>Height</span><strong>{extraction.height ?? "Missing"}</strong></div>
+              <div class="detail-item"><span>Eye color</span><strong>{extraction.eyeColor ?? "Missing"}</strong></div>
+              <div class="detail-item"><span>Organ donor</span><strong>{formatBoolean(extraction.organDonor)}</strong></div>
+              <div class="detail-item"><span>Veteran</span><strong>{formatBoolean(extraction.veteran)}</strong></div>
+              <div class="detail-item"><span>REAL ID</span><strong>{formatBoolean(extraction.realId)}</strong></div>
+              <div class="detail-item"><span>Under 21 until</span><strong>{extraction.under21Until ?? "N/A"}</strong></div>
+              <div class="detail-item"><span>Age at scan</span><strong>{extraction.ageAtScan ?? "Missing"}</strong></div>
+              <div class="detail-item"><span>Expired</span><strong>{formatBoolean(extraction.isExpired)}</strong></div>
               <div class="detail-item"><span>Confidence</span><strong>{percent(extraction.confidenceScore)}</strong></div>
             </div>
           {:else}

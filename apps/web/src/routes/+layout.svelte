@@ -9,7 +9,7 @@
       <span class="brand-mark"><ShieldCheck size={21} /></span>
       <span class="brand-text">
         <strong>PolicyLens</strong>
-        <span>Document intelligence</span>
+        <span>License intelligence</span>
       </span>
     </a>
     <nav class="nav" aria-label="Primary">

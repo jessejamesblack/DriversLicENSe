@@ -1,0 +1,13 @@
+{
+  "documentType": "LicenseFront",
+  "expectedStatus": "WARNING",
+  "extraction": {
+    "fullName": "Harper Lee Sample",
+    "licenseNumber": null,
+    "issuingState": "GA",
+    "dateOfBirth": "1975-01-30",
+    "realId": false,
+    "isExpired": false
+  },
+  "warningCategories": ["MISSING_LICENSE_NUMBER"]
+}

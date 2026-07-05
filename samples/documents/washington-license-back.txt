@@ -1,0 +1,19 @@
+SYNTHETIC SAMPLE - NOT A GOVERNMENT ID
+Document Type: License Back
+Full Name: Taylor Brooks Sample
+License Number: WA4455660
+Issuing State: WA
+Date of Birth: 1995-11-03
+Issue Date: 2025-11-03
+Expiration Date: 2031-11-03
+Address: 600 Training Trail, Olympia, WA
+License Class: D
+Endorsements: None
+Restrictions: None
+Sex: X
+Height: 5-11
+Eye Color: GRY
+Organ Donor: Yes
+Veteran: No
+REAL ID: No
+Confidence: 0.86

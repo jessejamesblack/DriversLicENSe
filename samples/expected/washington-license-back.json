@@ -1,0 +1,13 @@
+{
+  "documentType": "LicenseBack",
+  "expectedStatus": "VALID",
+  "extraction": {
+    "fullName": "Taylor Brooks Sample",
+    "licenseNumber": "WA4455660",
+    "issuingState": "WA",
+    "realId": false,
+    "organDonor": true,
+    "isExpired": false
+  },
+  "warningCategories": []
+}

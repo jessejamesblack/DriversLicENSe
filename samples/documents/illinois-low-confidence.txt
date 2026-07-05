@@ -1,0 +1,19 @@
+SYNTHETIC SAMPLE - NOT A GOVERNMENT ID
+Document Type: License Front
+Full Name: Rowan Ellis Sample
+License Number: IL6600455
+Issuing State: IL
+Date of Birth: 1988-04-18
+Issue Date: 2026-04-18
+Expiration Date: 2030-04-18
+Address: 900 Synthetic Court, Springfield, IL
+License Class: D
+Endorsements: None
+Restrictions: Corrective lenses
+Sex: X
+Height: 6-01
+Eye Color: GRN
+Organ Donor: No
+Veteran: No
+REAL ID: Yes
+Confidence: 0.62

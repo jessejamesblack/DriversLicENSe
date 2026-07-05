@@ -1,15 +1,14 @@
 import {
   StructuredExtractionAdapter,
   StructuredExtractionInput,
-  StructuredPolicyExtraction
+  StructuredLicenseExtraction
 } from "@policylens/domain";
 import { DeterministicStructuredExtractionAdapter } from "./deterministic-structured-extraction.adapter";
 
 export class MockStructuredExtractionAdapter implements StructuredExtractionAdapter {
   private readonly deterministic = new DeterministicStructuredExtractionAdapter();
 
-  async extractFields(input: StructuredExtractionInput): Promise<StructuredPolicyExtraction> {
+  async extractFields(input: StructuredExtractionInput): Promise<StructuredLicenseExtraction> {
     return this.deterministic.extractFields(input);
   }
 }
-

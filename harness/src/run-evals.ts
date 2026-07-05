@@ -2,7 +2,7 @@ import {
   buildDashboardSummary,
   DocumentRecord,
   DocumentType,
-  parseInsuranceDocumentText,
+  parseDriverLicenseText,
   validateStructuredExtraction,
   ValidationStatus,
   WarningCategory
@@ -26,11 +26,16 @@ interface EvalResult {
 }
 
 const FIXTURES = [
-  "general-liability-policy",
-  "property-submission",
-  "commercial-auto-policy",
-  "cyber-submission-missing-policy",
-  "workers-comp-low-confidence"
+  "ohio-real-id-front",
+  "texas-under-21-front",
+  "california-expired-front",
+  "new-york-temporary-license",
+  "florida-motorcycle-endorsement",
+  "washington-license-back",
+  "arizona-learner-permit",
+  "colorado-missing-dob",
+  "illinois-low-confidence",
+  "georgia-missing-license-number"
 ];
 
 export async function runEvalSuite(projectRoot = defaultProjectRoot()): Promise<EvalResult[]> {
@@ -40,11 +45,12 @@ export async function runEvalSuite(projectRoot = defaultProjectRoot()): Promise<
   for (const slug of FIXTURES) {
     const expected = await readExpected(projectRoot, slug);
     const text = await readFile(join(projectRoot, "samples", "documents", `${slug}.txt`), "utf8");
-    const extraction = parseInsuranceDocumentText({
+    const extraction = parseDriverLicenseText({
       text,
-      documentType: expected.documentType
+      documentType: expected.documentType,
+      referenceDate: "2026-07-04T00:00:00.000Z"
     });
-    const validated = validateStructuredExtraction(extraction);
+    const validated = validateStructuredExtraction(extraction, "2026-07-04T00:00:00.000Z");
     const failures = compareExtraction(expected, validated);
 
     records.push({
@@ -72,24 +78,26 @@ export async function runEvalSuite(projectRoot = defaultProjectRoot()): Promise<
     });
   }
 
-  const summary = buildDashboardSummary(records);
-  if (summary.documentsProcessed !== 5) {
+  const summary = buildDashboardSummary(records, "2026-07-04T00:00:00.000Z");
+  if (summary.documentsProcessed !== 10) {
     results.push({
       slug: "dashboard-summary",
       passed: false,
       status: "FAILED",
       expectedStatus: "VALID",
-      failures: [`Expected 5 processed documents, got ${summary.documentsProcessed}.`]
+      failures: [`Expected 10 processed documents, got ${summary.documentsProcessed}.`]
     });
   }
 
-  if (summary.totalPremium !== 842000) {
+  if (summary.under21Count !== 2 || summary.expiredCount !== 1 || summary.realIdCount !== 5) {
     results.push({
-      slug: "dashboard-premium",
+      slug: "dashboard-license-facts",
       passed: false,
       status: "FAILED",
       expectedStatus: "VALID",
-      failures: [`Expected total premium 842000, got ${summary.totalPremium}.`]
+      failures: [
+        `Expected under21=2 expired=1 realId=5, got under21=${summary.under21Count} expired=${summary.expiredCount} realId=${summary.realIdCount}.`
+      ]
     });
   }
 
@@ -114,7 +122,7 @@ function compareExtraction(
   for (const [field, expectedValue] of Object.entries(expected.extraction)) {
     const actualValue = validated.extraction[field as keyof typeof validated.extraction];
 
-    if (actualValue !== expectedValue) {
+    if (JSON.stringify(actualValue) !== JSON.stringify(expectedValue)) {
       failures.push(`Expected ${field} to be ${String(expectedValue)}, got ${String(actualValue)}.`);
     }
   }
@@ -158,4 +166,3 @@ async function main() {
 if (require.main === module) {
   void main();
 }
-

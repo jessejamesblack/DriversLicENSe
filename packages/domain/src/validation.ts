@@ -1,76 +1,81 @@
 import {
-  StructuredPolicyExtraction,
+  StructuredLicenseExtraction,
   ValidatedExtraction,
   ValidationWarning
 } from "./types";
-import { structuredPolicyExtractionSchema } from "./schemas";
+import { structuredLicenseExtractionSchema } from "./schemas";
 
 const LOW_CONFIDENCE_THRESHOLD = 0.75;
 
-export function validateStructuredExtraction(input: StructuredPolicyExtraction): ValidatedExtraction {
+export function validateStructuredExtraction(
+  input: StructuredLicenseExtraction,
+  referenceDate: Date | string = new Date()
+): ValidatedExtraction {
   const warnings: ValidationWarning[] = [...input.warnings];
-  const parsed = structuredPolicyExtractionSchema.safeParse(input);
+  const parsed = structuredLicenseExtractionSchema.safeParse(input);
 
   if (!parsed.success) {
     for (const issue of parsed.error.issues) {
       const field = issue.path[0];
       warnings.push({
         category: "SCHEMA_ERROR",
-        field: typeof field === "string" && field in input ? (field as keyof StructuredPolicyExtraction) : "schema",
+        field: typeof field === "string" && field in input ? (field as keyof StructuredLicenseExtraction) : "schema",
         message: issue.message,
         severity: "error"
       });
     }
   }
 
-  if (!input.policyNumber) {
+  if (!input.licenseNumber) {
     warnings.push({
-      category: "MISSING_POLICY_NUMBER",
-      field: "policyNumber",
-      message: "Policy number is missing or ambiguous.",
+      category: "MISSING_LICENSE_NUMBER",
+      field: "licenseNumber",
+      message: "License number is missing or ambiguous.",
       severity: "warning"
     });
   }
 
-  if (!input.lineOfBusiness) {
+  if (!input.dateOfBirth) {
     warnings.push({
-      category: "MISSING_LINE_OF_BUSINESS",
-      field: "lineOfBusiness",
-      message: "Line of business is missing.",
+      category: "MISSING_DATE_OF_BIRTH",
+      field: "dateOfBirth",
+      message: "Date of birth is missing or unreadable.",
       severity: "warning"
     });
   }
 
-  if (!input.state) {
+  if (!input.issuingState) {
     warnings.push({
-      category: "MISSING_STATE",
-      field: "state",
-      message: "Risk state is missing.",
+      category: "MISSING_ISSUING_STATE",
+      field: "issuingState",
+      message: "Issuing state is missing.",
       severity: "warning"
     });
   }
 
-  if (input.premium !== null && input.premium <= 0) {
+  if (!input.expirationDate) {
     warnings.push({
-      category: "INVALID_PREMIUM",
-      field: "premium",
-      message: "Premium must be a positive number.",
-      severity: "error"
+      category: "MISSING_EXPIRATION_DATE",
+      field: "expirationDate",
+      message: "Expiration date is missing or unreadable.",
+      severity: "warning"
+    });
+  } else if (input.isExpired || Date.parse(`${input.expirationDate}T00:00:00.000Z`) < startOfDayUtc(referenceDate)) {
+    warnings.push({
+      category: "EXPIRED_LICENSE",
+      field: "expirationDate",
+      message: "License appears to be expired.",
+      severity: "warning"
     });
   }
 
-  if (input.effectiveDate && input.expirationDate) {
-    const effectiveDate = Date.parse(input.effectiveDate);
-    const expirationDate = Date.parse(input.expirationDate);
-
-    if (!Number.isNaN(effectiveDate) && !Number.isNaN(expirationDate) && effectiveDate >= expirationDate) {
-      warnings.push({
-        category: "INVALID_DATE_RANGE",
-        field: "effectiveDate",
-        message: "Effective date must be before expiration date.",
-        severity: "error"
-      });
-    }
+  if (input.ageAtScan !== null && input.ageAtScan < 21) {
+    warnings.push({
+      category: "UNDER_AGE_21",
+      field: "dateOfBirth",
+      message: "Cardholder is under 21 at scan time.",
+      severity: "warning"
+    });
   }
 
   if (input.confidenceScore < LOW_CONFIDENCE_THRESHOLD) {
@@ -97,6 +102,11 @@ export function validateStructuredExtraction(input: StructuredPolicyExtraction):
     status,
     warnings: dedupedWarnings
   };
+}
+
+function startOfDayUtc(value: Date | string): number {
+  const today = value instanceof Date ? value : new Date(value);
+  return Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate());
 }
 
 function dedupeWarnings(warnings: ValidationWarning[]): ValidationWarning[] {

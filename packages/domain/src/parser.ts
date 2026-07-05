@@ -1,59 +1,56 @@
-import {
-  DocumentType,
-  OcrResult,
-  StructuredPolicyExtraction,
-  ValidationWarning
-} from "./types";
+import { DocumentType, OcrResult, StructuredLicenseExtraction } from "./types";
 
-const LINE_OF_BUSINESS_ALIASES = [
-  "General Liability",
-  "Property",
-  "Commercial Auto",
-  "Cyber",
-  "Workers Comp",
-  "Workers Compensation"
-];
-
-export function parseInsuranceDocumentText(input: {
+export function parseDriverLicenseText(input: {
   text: string;
   documentType: DocumentType;
   ocrResult?: OcrResult;
-}): StructuredPolicyExtraction {
+  referenceDate?: Date | string;
+}): StructuredLicenseExtraction {
   const text = normalizeWhitespace(input.text);
-  const warnings: ValidationWarning[] = [];
-  const insuredName = findString(text, ["Insured", "Named Insured", "Applicant", "Account"]);
-  const policyNumber = findPolicyNumber(text);
-  const lineOfBusiness =
-    findString(text, ["Line of Business", "LOB", "Coverage"]) ?? inferLineOfBusiness(text);
-  const state = normalizeState(findString(text, ["State", "Risk State", "Primary State"]));
-  const effectiveDate = normalizeDate(findString(text, ["Effective Date", "Policy Effective"]));
-  const expirationDate = normalizeDate(findString(text, ["Expiration Date", "Policy Expiration"]));
-  const premium = findMoney(text, ["Premium", "Estimated Premium", "Total Premium"]);
-  const perOccurrenceLimit = findMoney(text, ["Per Occurrence Limit", "Occurrence Limit"]);
-  const aggregateLimit = findMoney(text, ["Aggregate Limit", "General Aggregate"]);
+  const fullName = findFullName(text);
+  const licenseNumber = findLicenseNumber(text);
+  const issuingState = normalizeState(findString(text, ["Issuing State", "State", "Jurisdiction"]));
+  const dateOfBirth = normalizeDate(findString(text, ["Date of Birth", "DOB", "Birth Date"]));
+  const issueDate = normalizeDate(findString(text, ["Issue Date", "Issued", "ISS"]));
+  const expirationDate = normalizeDate(findString(text, ["Expiration Date", "Expires", "EXP"]));
+  const address = findString(text, ["Address", "Residence Address", "Street Address"]);
+  const licenseClass = findString(text, ["License Class", "Class"]);
+  const endorsements = findList(text, ["Endorsements", "Endorsement"]);
+  const restrictions = findList(text, ["Restrictions", "Restriction"]);
+  const sex = findString(text, ["Sex", "Gender"]);
+  const height = findString(text, ["Height", "HGT"]);
+  const eyeColor = findString(text, ["Eye Color", "Eyes", "EYE"]);
+  const organDonor = findBoolean(text, ["Organ Donor", "Donor"]);
+  const veteran = findBoolean(text, ["Veteran"]);
+  const realId = findBoolean(text, ["REAL ID", "Real ID", "Real ID Compliant"]) ?? inferRealId(text);
+  const under21Until = normalizeDate(findString(text, ["Under 21 Until", "Under 21", "Turns 21"]));
+  const referenceDate = toDate(input.referenceDate ?? new Date());
+  const ageAtScan = dateOfBirth ? calculateAge(dateOfBirth, referenceDate) : null;
+  const isExpired = expirationDate ? isBefore(expirationDate, referenceDate) : false;
   const confidenceScore = findConfidence(text) ?? input.ocrResult?.confidenceScore ?? 0.86;
 
-  if (!policyNumber && input.documentType !== "Submission") {
-    warnings.push({
-      category: "MISSING_POLICY_NUMBER",
-      field: "policyNumber",
-      message: "No policy number was found in the source text.",
-      severity: "warning"
-    });
-  }
-
   return {
-    insuredName,
-    policyNumber,
-    lineOfBusiness,
-    state,
-    effectiveDate,
+    fullName,
+    licenseNumber,
+    issuingState,
+    dateOfBirth,
+    issueDate,
     expirationDate,
-    premium,
-    perOccurrenceLimit,
-    aggregateLimit,
+    address,
+    licenseClass,
+    endorsements,
+    restrictions,
+    sex,
+    height,
+    eyeColor,
+    organDonor,
+    veteran,
+    realId,
+    under21Until,
+    ageAtScan,
+    isExpired,
     confidenceScore,
-    warnings
+    warnings: []
   };
 }
 
@@ -62,28 +59,45 @@ function normalizeWhitespace(text: string): string {
 }
 
 function findString(text: string, labels: string[]): string | null {
-  for (const label of labels) {
-    const pattern = new RegExp(`${escapeRegExp(label)}\\s*[:\\-]\\s*(.+)`, "i");
-    const match = text.match(pattern);
+  const lines = text.split("\n");
 
-    if (match?.[1]) {
-      return cleanupValue(match[1]);
+  for (const label of labels) {
+    const pattern = new RegExp(`^\\s*${escapeRegExp(label)}\\s*(?::|-|\\s{2,})\\s*(.+)$`, "i");
+
+    for (const line of lines) {
+      const match = line.match(pattern);
+
+      if (match?.[1]) {
+        return cleanupValue(match[1]);
+      }
     }
   }
 
   return null;
 }
 
-function findPolicyNumber(text: string): string | null {
-  return (
-    findString(text, ["Policy Number", "Policy No", "Policy #"]) ??
-    text.match(/\b[A-Z]{2,4}-\d{4,8}\b/)?.[0] ??
-    null
-  );
+function findFullName(text: string): string | null {
+  const direct = findString(text, ["Full Name", "Name", "Cardholder", "Driver"]);
+  if (direct) {
+    return direct;
+  }
+
+  const firstName = findString(text, ["First Name", "Given Name"]);
+  const lastName = findString(text, ["Last Name", "Family Name", "Surname"]);
+
+  if (firstName && lastName) {
+    return `${firstName} ${lastName}`;
+  }
+
+  return null;
 }
 
-function inferLineOfBusiness(text: string): string | null {
-  return LINE_OF_BUSINESS_ALIASES.find((alias) => text.toLowerCase().includes(alias.toLowerCase())) ?? null;
+function findLicenseNumber(text: string): string | null {
+  return (
+    findString(text, ["License Number", "DL Number", "Driver License Number", "Document Number", "ID Number"]) ??
+    text.match(/\b[A-Z]{1,3}[0-9]{5,12}\b/)?.[0] ??
+    null
+  );
 }
 
 function normalizeState(value: string | null): string | null {
@@ -115,14 +129,38 @@ function normalizeDate(value: string | null): string | null {
   return null;
 }
 
-function findMoney(text: string, labels: string[]): number | null {
-  for (const label of labels) {
-    const pattern = new RegExp(`${escapeRegExp(label)}\\s*[:\\-]\\s*\\$?([0-9,]+(?:\\.\\d{2})?)`, "i");
-    const match = text.match(pattern);
+function findList(text: string, labels: string[]): string[] {
+  const value = findString(text, labels);
+  if (!value || /^(none|n\/a|not applicable)$/i.test(value)) {
+    return [];
+  }
 
-    if (match?.[1]) {
-      return Number(match[1].replace(/,/g, ""));
-    }
+  return value
+    .split(/[,;/|]+/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function findBoolean(text: string, labels: string[]): boolean | null {
+  const value = findString(text, labels);
+  if (!value) {
+    return null;
+  }
+
+  if (/^(yes|y|true|1|present|compliant|star)$/i.test(value)) {
+    return true;
+  }
+
+  if (/^(no|n|false|0|absent|non-compliant|not compliant|none)$/i.test(value)) {
+    return false;
+  }
+
+  return null;
+}
+
+function inferRealId(text: string): boolean | null {
+  if (/\bREAL ID\b/i.test(text) && /\b(star|compliant|yes)\b/i.test(text)) {
+    return true;
   }
 
   return null;
@@ -147,7 +185,31 @@ function cleanupValue(value: string): string {
   return value.split("\n")[0].replace(/\s+/g, " ").trim().replace(/[.;]$/, "");
 }
 
+function calculateAge(dateOfBirth: string, referenceDate: Date): number {
+  const [birthYear, birthMonth, birthDay] = dateOfBirth.split("-").map(Number);
+  let age = referenceDate.getUTCFullYear() - birthYear;
+  const currentMonth = referenceDate.getUTCMonth() + 1;
+  const currentDay = referenceDate.getUTCDate();
+
+  if (currentMonth < birthMonth || (currentMonth === birthMonth && currentDay < birthDay)) {
+    age -= 1;
+  }
+
+  return age;
+}
+
+function isBefore(dateValue: string, referenceDate: Date): boolean {
+  return Date.parse(`${dateValue}T00:00:00.000Z`) < Date.UTC(
+    referenceDate.getUTCFullYear(),
+    referenceDate.getUTCMonth(),
+    referenceDate.getUTCDate()
+  );
+}
+
+function toDate(value: Date | string): Date {
+  return value instanceof Date ? value : new Date(value);
+}
+
 function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
-

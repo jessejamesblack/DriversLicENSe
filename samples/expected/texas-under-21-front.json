@@ -1,0 +1,15 @@
+{
+  "documentType": "LicenseFront",
+  "expectedStatus": "WARNING",
+  "extraction": {
+    "fullName": "Riley Morgan Sample",
+    "licenseNumber": "TX8844221",
+    "issuingState": "TX",
+    "dateOfBirth": "2008-08-20",
+    "under21Until": "2029-08-20",
+    "ageAtScan": 17,
+    "realId": true,
+    "isExpired": false
+  },
+  "warningCategories": ["UNDER_AGE_21"]
+}

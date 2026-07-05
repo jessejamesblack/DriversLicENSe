@@ -51,66 +51,107 @@ function inferConfidence(text: string): number {
 function fallbackText(input: ExtractTextInput): string {
   const filename = input.filename.toLowerCase();
 
-  if (filename.includes("cyber")) {
-    return `Applicant: Blue Harbor Payments
-Line of Business: Cyber
-Primary State: NY
-Effective Date: 2026-10-01
-Expiration Date: 2027-10-01
-Estimated Premium: $86,000
-Per Occurrence Limit: $1,000,000
-Aggregate Limit: $3,000,000
-Confidence: 0.84`;
-  }
-
-  if (filename.includes("workers") || filename.includes("wc")) {
-    return `Named Insured: Granite Peak Manufacturing
-Policy Number: WC-220011
-Line of Business: Workers Comp
-Risk State: PA
-Effective Date: 2026-11-01
-Expiration Date: 2027-11-01
-Total Premium: $129,000
-Per Occurrence Limit: $500,000
-Aggregate Limit: $1,000,000
-Confidence: 0.62`;
-  }
-
-  if (filename.includes("property")) {
-    return `Applicant: Northstar Warehousing Inc
-Policy Number: PROP-778899
-Line of Business: Property
-Primary State: OH
-Effective Date: 2026-08-15
-Expiration Date: 2027-08-15
-Estimated Premium: $310,000
-Per Occurrence Limit: $2,500,000
-Aggregate Limit: $5,000,000
+  if (filename.includes("texas") || filename.includes("under-21")) {
+    return `SYNTHETIC SAMPLE - NOT A GOVERNMENT ID
+Full Name: Riley Morgan Sample
+License Number: TX8844221
+Issuing State: TX
+Date of Birth: 2008-08-20
+Issue Date: 2025-08-20
+Expiration Date: 2030-08-20
+Address: 200 Demo Road, Austin, TX
+License Class: C
+Endorsements: None
+Restrictions: Under 21, Corrective lenses
+Sex: F
+Height: 5-05
+Eye Color: HAZ
+Organ Donor: No
+Veteran: No
+REAL ID: Yes
+Under 21 Until: 2029-08-20
 Confidence: 0.88`;
   }
 
-  if (filename.includes("auto")) {
-    return `Named Insured: Meridian Fleet Services
-Policy Number: AUTO-445566
-Line of Business: Commercial Auto
-Risk State: IL
-Effective Date: 2026-09-01
-Expiration Date: 2027-09-01
-Total Premium: $192,000
-Per Occurrence Limit: $1,000,000
-Aggregate Limit: $1,000,000
+  if (filename.includes("california") || filename.includes("expired")) {
+    return `SYNTHETIC SAMPLE - NOT A GOVERNMENT ID
+Full Name: Casey Rivera Sample
+License Number: CA5522109
+Issuing State: CA
+Date of Birth: 1984-03-14
+Issue Date: 2018-03-14
+Expiration Date: 2024-03-14
+Address: 300 Example Avenue, Sacramento, CA
+License Class: C
+Endorsements: None
+Restrictions: None
+Sex: X
+Height: 5-10
+Eye Color: GRN
+Organ Donor: Yes
+Veteran: No
+REAL ID: No
+Confidence: 0.93`;
+  }
+
+  if (filename.includes("new-york") || filename.includes("temporary")) {
+    return `SYNTHETIC SAMPLE - NOT A GOVERNMENT ID
+Full Name: Avery Chen Sample
+License Number: NY7711002
+Issuing State: NY
+Date of Birth: 1999-12-02
+Issue Date: 2026-06-15
+Expiration Date: 2026-09-15
+Address: 400 Sample Street, Albany, NY
+License Class: D
+Endorsements: None
+Restrictions: Temporary document, Photo pending
+Sex: M
+Height: 6-00
+Eye Color: BLU
+Organ Donor: No
+Veteran: Yes
+REAL ID: No
+Confidence: 0.81`;
+  }
+
+  if (filename.includes("florida") || filename.includes("motorcycle")) {
+    return `SYNTHETIC SAMPLE - NOT A GOVERNMENT ID
+Full Name: Morgan Blake Sample
+License Number: FL9033775
+Issuing State: FL
+Date of Birth: 1978-05-29
+Issue Date: 2026-05-29
+Expiration Date: 2034-05-29
+Address: 500 Practice Parkway, Tallahassee, FL
+License Class: E
+Endorsements: Motorcycle
+Restrictions: None
+Sex: F
+Height: 5-07
+Eye Color: BRO
+Organ Donor: Yes
+Veteran: Yes
+REAL ID: Yes
 Confidence: 0.9`;
   }
 
-  return `Named Insured: Acme Logistics LLC
-Policy Number: GL-123456
-Line of Business: General Liability
-Risk State: IN
-Effective Date: 2026-07-01
-Expiration Date: 2027-07-01
-Total Premium: $125,000
-Per Occurrence Limit: $1,000,000
-Aggregate Limit: $2,000,000
+  return `SYNTHETIC SAMPLE - NOT A GOVERNMENT ID
+Full Name: Jordan Avery Sample
+License Number: OH1234567
+Issuing State: OH
+Date of Birth: 1990-09-12
+Issue Date: 2026-07-01
+Expiration Date: 2030-07-01
+Address: 100 Sample Lane, Columbus, OH
+License Class: D
+Endorsements: M
+Restrictions: Corrective lenses
+Sex: X
+Height: 5-09
+Eye Color: BRO
+Organ Donor: Yes
+Veteran: No
+REAL ID: Yes
 Confidence: 0.91`;
 }
-

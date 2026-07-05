@@ -6,10 +6,10 @@
   import { getDashboardSummary } from "$lib/api";
   import {
     confidenceByDocumentTypeChart,
-    currency,
+    documentsByIssuingStateChart,
     documentsByStatusChart,
-    percent,
-    premiumByLineChart
+    expirationBucketChart,
+    percent
   } from "$lib/chartData";
 
   let summary: DashboardSummary | null = null;
@@ -36,7 +36,7 @@
   <div class="page-header">
     <div>
       <h1>Data quality dashboard</h1>
-      <p>Operational metrics from processed document records, normalized fields, and validation metadata.</p>
+      <p>Operational metrics from processed license scans, normalized fields, and validation metadata.</p>
     </div>
     <button class="secondary" on:click={loadSummary} disabled={isLoading}>
       <RefreshCw size={17} />
@@ -51,19 +51,28 @@
   {:else if summary}
     <div class="metric-grid" style="margin-bottom: 1rem;">
       <div class="metric"><span>Documents processed</span><strong>{summary.documentsProcessed}</strong></div>
-      <div class="metric"><span>Total premium</span><strong>{currency(summary.totalPremium)}</strong></div>
       <div class="metric"><span>Average confidence</span><strong>{percent(summary.averageConfidence)}</strong></div>
       <div class="metric"><span>Validation warnings</span><strong>{summary.warningCount}</strong></div>
+      <div class="metric"><span>REAL ID</span><strong>{summary.realIdCount}</strong></div>
+      <div class="metric"><span>Organ donor</span><strong>{summary.organDonorCount}</strong></div>
+      <div class="metric"><span>Veteran</span><strong>{summary.veteranCount}</strong></div>
+      <div class="metric"><span>Expired</span><strong>{summary.expiredCount}</strong></div>
+      <div class="metric"><span>Under 21</span><strong>{summary.under21Count}</strong></div>
+      <div class="metric"><span>Average age</span><strong>{summary.averageAge}</strong></div>
     </div>
 
     <div class="chart-grid">
       <section class="chart-card">
-        <h2>Premium by line of business</h2>
-        <ChartCanvas type="bar" data={premiumByLineChart(summary)} />
+        <h2>Documents by issuing state</h2>
+        <ChartCanvas type="bar" data={documentsByIssuingStateChart(summary)} />
       </section>
       <section class="chart-card">
         <h2>Documents by validation status</h2>
         <ChartCanvas type="doughnut" data={documentsByStatusChart(summary)} />
+      </section>
+      <section class="chart-card">
+        <h2>Expiration buckets</h2>
+        <ChartCanvas type="bar" data={expirationBucketChart(summary)} />
       </section>
       <section class="chart-card">
         <h2>Average confidence by document type</h2>

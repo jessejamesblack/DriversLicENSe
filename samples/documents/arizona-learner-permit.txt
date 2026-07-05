@@ -1,0 +1,20 @@
+SYNTHETIC SAMPLE - NOT A GOVERNMENT ID
+Document Type: Learner Permit
+Full Name: Quinn Patel Sample
+License Number: AZ1188990
+Issuing State: AZ
+Date of Birth: 2010-02-10
+Issue Date: 2026-02-10
+Expiration Date: 2028-02-10
+Address: 700 Example Loop, Phoenix, AZ
+License Class: G
+Endorsements: None
+Restrictions: Licensed driver required, Daylight driving
+Sex: M
+Height: 5-06
+Eye Color: BRO
+Organ Donor: No
+Veteran: No
+REAL ID: No
+Under 21 Until: 2031-02-10
+Confidence: 0.87

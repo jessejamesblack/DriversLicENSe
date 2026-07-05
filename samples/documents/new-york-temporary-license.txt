@@ -1,0 +1,19 @@
+SYNTHETIC SAMPLE - NOT A GOVERNMENT ID
+Document Type: Temporary License
+Full Name: Avery Chen Sample
+License Number: NY7711002
+Issuing State: NY
+Date of Birth: 1999-12-02
+Issue Date: 2026-06-15
+Expiration Date: 2026-09-15
+Address: 400 Sample Street, Albany, NY
+License Class: D
+Endorsements: None
+Restrictions: Temporary document, Photo pending
+Sex: M
+Height: 6-00
+Eye Color: BLU
+Organ Donor: No
+Veteran: Yes
+REAL ID: No
+Confidence: 0.81

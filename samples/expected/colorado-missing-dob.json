@@ -1,0 +1,14 @@
+{
+  "documentType": "LicenseFront",
+  "expectedStatus": "WARNING",
+  "extraction": {
+    "fullName": "Skyler Reed Sample",
+    "licenseNumber": "CO8833012",
+    "issuingState": "CO",
+    "dateOfBirth": null,
+    "ageAtScan": null,
+    "realId": true,
+    "isExpired": false
+  },
+  "warningCategories": ["MISSING_DATE_OF_BIRTH"]
+}

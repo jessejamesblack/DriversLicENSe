@@ -1,0 +1,15 @@
+{
+  "documentType": "TemporaryLicense",
+  "expectedStatus": "VALID",
+  "extraction": {
+    "fullName": "Avery Chen Sample",
+    "licenseNumber": "NY7711002",
+    "issuingState": "NY",
+    "dateOfBirth": "1999-12-02",
+    "expirationDate": "2026-09-15",
+    "veteran": true,
+    "realId": false,
+    "isExpired": false
+  },
+  "warningCategories": []
+}

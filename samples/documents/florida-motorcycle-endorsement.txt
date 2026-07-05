@@ -1,0 +1,19 @@
+SYNTHETIC SAMPLE - NOT A GOVERNMENT ID
+Document Type: License Front
+Full Name: Morgan Blake Sample
+License Number: FL9033775
+Issuing State: FL
+Date of Birth: 1978-05-29
+Issue Date: 2026-05-29
+Expiration Date: 2034-05-29
+Address: 500 Practice Parkway, Tallahassee, FL
+License Class: E
+Endorsements: Motorcycle
+Restrictions: None
+Sex: F
+Height: 5-07
+Eye Color: BRO
+Organ Donor: Yes
+Veteran: Yes
+REAL ID: Yes
+Confidence: 0.9

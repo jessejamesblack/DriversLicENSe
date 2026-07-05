@@ -1,0 +1,19 @@
+SYNTHETIC SAMPLE - NOT A GOVERNMENT ID
+Document Type: License Front
+Full Name: Jordan Avery Sample
+License Number: OH1234567
+Issuing State: OH
+Date of Birth: 1990-09-12
+Issue Date: 2026-07-01
+Expiration Date: 2030-07-01
+Address: 100 Sample Lane, Columbus, OH
+License Class: D
+Endorsements: M
+Restrictions: Corrective lenses
+Sex: X
+Height: 5-09
+Eye Color: BRO
+Organ Donor: Yes
+Veteran: No
+REAL ID: Yes
+Confidence: 0.91

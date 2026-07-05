@@ -1,17 +1,16 @@
 import {
-  parseInsuranceDocumentText,
+  parseDriverLicenseText,
   StructuredExtractionAdapter,
   StructuredExtractionInput,
-  StructuredPolicyExtraction
+  StructuredLicenseExtraction
 } from "@policylens/domain";
 
 export class DeterministicStructuredExtractionAdapter implements StructuredExtractionAdapter {
-  async extractFields(input: StructuredExtractionInput): Promise<StructuredPolicyExtraction> {
-    return parseInsuranceDocumentText({
+  async extractFields(input: StructuredExtractionInput): Promise<StructuredLicenseExtraction> {
+    return parseDriverLicenseText({
       text: input.ocrText,
       documentType: input.documentType,
       ocrResult: input.ocrResult
     });
   }
 }
-

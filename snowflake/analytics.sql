@@ -1,12 +1,11 @@
--- Premium by line of business
+-- Documents by issuing state
 SELECT
-  line_of_business,
+  issuing_state,
   COUNT(*) AS document_count,
-  SUM(premium) AS total_premium,
   AVG(confidence_score) AS avg_confidence
 FROM DOCUMENT_EXTRACTIONS
-GROUP BY line_of_business
-ORDER BY total_premium DESC;
+GROUP BY issuing_state
+ORDER BY document_count DESC;
 
 -- Average confidence by document type
 SELECT
@@ -16,6 +15,32 @@ SELECT
 FROM DOCUMENT_EXTRACTIONS
 GROUP BY document_type
 ORDER BY avg_confidence ASC;
+
+-- License facts by issuing state
+SELECT
+  issuing_state,
+  COUNT_IF(real_id) AS real_id_count,
+  COUNT_IF(organ_donor) AS organ_donor_count,
+  COUNT_IF(veteran) AS veteran_count,
+  COUNT_IF(is_expired) AS expired_count,
+  COUNT_IF(age_at_scan < 21) AS under_21_count
+FROM DOCUMENT_EXTRACTIONS
+GROUP BY issuing_state
+ORDER BY issuing_state;
+
+-- Expiration buckets
+SELECT
+  CASE
+    WHEN expiration_date IS NULL THEN 'Missing expiration'
+    WHEN expiration_date < CURRENT_DATE THEN 'Expired'
+    WHEN expiration_date <= DATEADD(day, 30, CURRENT_DATE) THEN 'Expires within 30 days'
+    WHEN expiration_date <= DATEADD(month, 6, CURRENT_DATE) THEN 'Expires within 6 months'
+    ELSE 'Valid over 6 months'
+  END AS expiration_bucket,
+  COUNT(*) AS document_count
+FROM DOCUMENT_EXTRACTIONS
+GROUP BY expiration_bucket
+ORDER BY document_count DESC;
 
 -- Validation warning count by category
 SELECT
@@ -39,10 +64,11 @@ SELECT
   id,
   filename,
   document_type,
-  insured_name,
+  full_name,
+  license_number,
+  issuing_state,
   confidence_score,
   validation_status
 FROM DOCUMENT_EXTRACTIONS
 WHERE confidence_score < 0.75
 ORDER BY confidence_score ASC;
-

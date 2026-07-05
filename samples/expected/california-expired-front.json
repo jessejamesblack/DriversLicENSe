@@ -1,0 +1,14 @@
+{
+  "documentType": "LicenseFront",
+  "expectedStatus": "WARNING",
+  "extraction": {
+    "fullName": "Casey Rivera Sample",
+    "licenseNumber": "CA5522109",
+    "issuingState": "CA",
+    "dateOfBirth": "1984-03-14",
+    "expirationDate": "2024-03-14",
+    "realId": false,
+    "isExpired": true
+  },
+  "warningCategories": ["EXPIRED_LICENSE"]
+}

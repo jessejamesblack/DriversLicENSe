@@ -1,0 +1,19 @@
+SYNTHETIC SAMPLE - NOT A GOVERNMENT ID
+Document Type: License Front
+Full Name: Casey Rivera Sample
+License Number: CA5522109
+Issuing State: CA
+Date of Birth: 1984-03-14
+Issue Date: 2018-03-14
+Expiration Date: 2024-03-14
+Address: 300 Example Avenue, Sacramento, CA
+License Class: C
+Endorsements: None
+Restrictions: None
+Sex: X
+Height: 5-10
+Eye Color: GRN
+Organ Donor: Yes
+Veteran: No
+REAL ID: No
+Confidence: 0.93

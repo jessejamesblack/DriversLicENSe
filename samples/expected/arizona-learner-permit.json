@@ -1,0 +1,14 @@
+{
+  "documentType": "LearnerPermit",
+  "expectedStatus": "WARNING",
+  "extraction": {
+    "fullName": "Quinn Patel Sample",
+    "licenseNumber": "AZ1188990",
+    "issuingState": "AZ",
+    "dateOfBirth": "2010-02-10",
+    "ageAtScan": 16,
+    "under21Until": "2031-02-10",
+    "isExpired": false
+  },
+  "warningCategories": ["UNDER_AGE_21"]
+}
