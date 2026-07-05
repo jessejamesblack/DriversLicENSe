@@ -1,11 +1,23 @@
-import { Duration, RemovalPolicy, Stack, StackProps } from "aws-cdk-lib";
-import { AttributeType, BillingMode, Table } from "aws-cdk-lib/aws-dynamodb";
-import { Effect, PolicyStatement } from "aws-cdk-lib/aws-iam";
-import { Code, Function, Runtime } from "aws-cdk-lib/aws-lambda";
+import { CfnOutput, Duration, RemovalPolicy, Stack, StackProps } from "aws-cdk-lib";
 import { HttpApi, CorsHttpMethod } from "aws-cdk-lib/aws-apigatewayv2";
 import { HttpLambdaIntegration } from "aws-cdk-lib/aws-apigatewayv2-integrations";
+import {
+  AllowedMethods,
+  CachePolicy,
+  Distribution,
+  OriginProtocolPolicy,
+  OriginRequestPolicy,
+  ViewerProtocolPolicy
+} from "aws-cdk-lib/aws-cloudfront";
+import { HttpOrigin, S3BucketOrigin } from "aws-cdk-lib/aws-cloudfront-origins";
+import { AttributeType, BillingMode, Table } from "aws-cdk-lib/aws-dynamodb";
+import { Effect, PolicyStatement } from "aws-cdk-lib/aws-iam";
+import { Runtime } from "aws-cdk-lib/aws-lambda";
+import { NodejsFunction, OutputFormat } from "aws-cdk-lib/aws-lambda-nodejs";
 import { BlockPublicAccess, Bucket, BucketEncryption } from "aws-cdk-lib/aws-s3";
+import { BucketDeployment, Source } from "aws-cdk-lib/aws-s3-deployment";
 import { Construct } from "constructs";
+import { Fn } from "aws-cdk-lib";
 import { join } from "node:path";
 
 export class PolicyLensStack extends Stack {
@@ -29,12 +41,29 @@ export class PolicyLensStack extends Stack {
       removalPolicy: RemovalPolicy.DESTROY
     });
 
-    const apiFunction = new Function(this, "ApiFunction", {
+    const apiFunction = new NodejsFunction(this, "ApiFunction", {
       runtime: Runtime.NODEJS_20_X,
       handler: "lambda.handler",
-      code: Code.fromAsset(join(__dirname, "../../../../apps/api/dist")),
+      entry: join(__dirname, "../../../../apps/api/src/lambda.ts"),
       timeout: Duration.seconds(30),
       memorySize: 512,
+      bundling: {
+        format: OutputFormat.CJS,
+        minify: false,
+        sourceMap: true,
+        target: "node20",
+        mainFields: ["module", "main"],
+        externalModules: [
+          "@fastify/static",
+          "@fastify/view",
+          "@nestjs/microservices",
+          "@nestjs/platform-express",
+          "@nestjs/websockets",
+          "cache-manager",
+          "class-transformer",
+          "class-validator"
+        ]
+      },
       environment: {
         APP_MODE: "aws",
         STORAGE_ADAPTER: "s3",
@@ -74,6 +103,70 @@ export class PolicyLensStack extends Stack {
       path: "/",
       integration
     });
+
+    const websiteBucket = new Bucket(this, "WebsiteBucket", {
+      encryption: BucketEncryption.S3_MANAGED,
+      blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
+      enforceSSL: true,
+      autoDeleteObjects: true,
+      removalPolicy: RemovalPolicy.DESTROY
+    });
+
+    const apiDomainName = Fn.select(2, Fn.split("/", api.apiEndpoint));
+    const distribution = new Distribution(this, "WebsiteDistribution", {
+      defaultRootObject: "index.html",
+      defaultBehavior: {
+        origin: S3BucketOrigin.withOriginAccessControl(websiteBucket),
+        viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS
+      },
+      additionalBehaviors: {
+        "documents*": {
+          origin: new HttpOrigin(apiDomainName, {
+            protocolPolicy: OriginProtocolPolicy.HTTPS_ONLY
+          }),
+          allowedMethods: AllowedMethods.ALLOW_ALL,
+          cachePolicy: CachePolicy.CACHING_DISABLED,
+          originRequestPolicy: OriginRequestPolicy.ALL_VIEWER_EXCEPT_HOST_HEADER,
+          viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS
+        },
+        "dashboard*": {
+          origin: new HttpOrigin(apiDomainName, {
+            protocolPolicy: OriginProtocolPolicy.HTTPS_ONLY
+          }),
+          allowedMethods: AllowedMethods.ALLOW_ALL,
+          cachePolicy: CachePolicy.CACHING_DISABLED,
+          originRequestPolicy: OriginRequestPolicy.ALL_VIEWER_EXCEPT_HOST_HEADER,
+          viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS
+        }
+      },
+      errorResponses: [
+        {
+          httpStatus: 403,
+          responseHttpStatus: 200,
+          responsePagePath: "/index.html",
+          ttl: Duration.minutes(1)
+        },
+        {
+          httpStatus: 404,
+          responseHttpStatus: 200,
+          responsePagePath: "/index.html",
+          ttl: Duration.minutes(1)
+        }
+      ]
+    });
+
+    new BucketDeployment(this, "WebsiteDeployment", {
+      sources: [Source.asset(join(__dirname, "../../../../apps/web/build"))],
+      destinationBucket: websiteBucket,
+      distribution,
+      distributionPaths: ["/*"]
+    });
+
+    new CfnOutput(this, "ApiEndpoint", {
+      value: api.apiEndpoint
+    });
+    new CfnOutput(this, "WebsiteUrl", {
+      value: `https://${distribution.distributionDomainName}`
+    });
   }
 }
-

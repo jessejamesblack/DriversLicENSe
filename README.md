@@ -103,6 +103,8 @@ The CDK stack creates:
 - Lambda-hosted NestJS API.
 - HTTP API Gateway.
 - Textract permissions for synchronous OCR on tiny sample documents.
+- S3 bucket for the SvelteKit static build.
+- CloudFront distribution for the external website.
 
 Before deploying, set an AWS Budget alert and keep usage tiny.
 
@@ -110,6 +112,13 @@ Before deploying, set an AWS Budget alert and keep usage tiny.
 npm.cmd run cdk:synth
 npm.cmd run deploy --workspace @policylens/cdk
 ```
+
+The deploy output includes:
+
+- `WebsiteUrl`: the public CloudFront site URL.
+- `ApiEndpoint`: the direct API Gateway URL.
+
+The hosted SvelteKit build calls the API through the same CloudFront hostname, so no browser-side cloud credentials are needed.
 
 Tear down after testing:
 
