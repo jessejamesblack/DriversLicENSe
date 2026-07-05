@@ -17,6 +17,7 @@ const requiredFiles = [
 const scannedExtensions = new Set([".ts", ".svelte", ".md", ".json", ".sql", ".mjs"]);
 const forbiddenTerms = [
   ["inter", "view"],
+  ["re", "view"],
   ["candi", "date"],
   ["acceler", "ant"],
   ["5", "-minute"],

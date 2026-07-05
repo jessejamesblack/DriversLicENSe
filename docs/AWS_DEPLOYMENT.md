@@ -1,6 +1,6 @@
 # AWS Deployment
 
-PolicyLens deploys with AWS CDK. The stack publishes the SvelteKit static site through CloudFront and routes API paths to the Lambda-hosted NestJS API.
+PolicyLens deploys with AWS CDK. The stack publishes the SvelteKit static site through CloudFront and routes API paths to the Lambda-hosted NestJS API for synthetic driver license processing.
 
 ## Local AWS CLI
 

@@ -1,30 +1,99 @@
-# PolicyLens
+﻿# PolicyLens
 
-PolicyLens is a harness-engineering experimentation project for insurance document ingestion and data quality monitoring. It covers the full loop from messy uploaded document to OCR text, structured JSON, Zod validation, persisted raw plus normalized data, and dashboard analytics.
+PolicyLens is a harness-engineering experiment for synthetic driver license OCR, structured extraction, validation, and analytics. It takes an uploaded license image or PDF, runs OCR, normalizes fields into typed JSON, validates the output with Zod, stores raw plus normalized data, and renders a data quality dashboard.
 
-It is intentionally local-first. The workflow works without AWS, Snowflake, Bedrock, OpenAI credentials, IAM, or live cloud services.
+Live site: https://d3damhdwn1rquz.cloudfront.net
 
-The harness-engineering approach follows the ideas in OpenAI's article on agent-first software work: keep repository knowledge local and structured, make the application legible to agents, encode architecture constraints mechanically, and build feedback loops that agents can run directly.
+The sample set is synthetic only. Do not upload real identity documents, real customer data, or production PII.
+
+Upload-ready synthetic examples live in `samples/upload-pdfs` and `samples/upload-images`.
+
+## What It Scans
+
+PolicyLens is tuned for driver license style documents:
+
+- Front-side license scans with name, license number, issuing state, date of birth, issue date, expiration date, address, class, restrictions, endorsements, and physical descriptors.
+- Back-side or barcode-text style scans where OCR can still expose normalized labels.
+- Temporary licenses and learner permits with shorter expiration windows and extra restrictions.
+- Quality edge cases such as missing DOB, missing license number, expired credentials, under-21 holders, and low OCR confidence.
+
+General license facts modeled by the app:
+
+- Issuing state matters because U.S. driver licenses are issued by states and territories, not one central national issuer.
+- DOB is useful for age-at-scan, under-21 warnings, and age-bucket analytics.
+- Expiration date drives validity warnings and operational expiration buckets.
+- REAL ID, organ donor, veteran, restrictions, endorsements, class, sex, height, and eye color are common fields or markers that can become useful structured data.
+- Back-side scans often include machine-readable data; this project treats OCR text as the stable boundary and keeps barcode parsing as a future adapter.
 
 ## Architecture
 
 ```text
-User Upload
+Upload
   -> SvelteKit UI
   -> NestJS API / API Gateway
-  -> Local Storage or S3
+  -> Local storage or S3
   -> Mock OCR or Amazon Textract
-  -> Deterministic Structured Extraction Adapter
-  -> Zod Validation
-  -> Local JSON Store or DynamoDB
+  -> Deterministic structured extraction
+  -> Zod validation
+  -> Local JSON store or DynamoDB
   -> Dashboard API
-  -> SvelteKit Analytics Dashboard
-  -> Optional Snowflake Warehouse Export
+  -> SvelteKit dashboard
+  -> Optional Snowflake analytics model
 ```
+
+The important design choice is raw-plus-normalized persistence. PolicyLens stores OCR output and raw extraction JSON alongside normalized fields so failed, low-confidence, or surprising outputs can be replayed without losing context.
+
+## Hosted AWS Version
+
+The public site is hosted at https://d3damhdwn1rquz.cloudfront.net.
+
+AWS resources used by the deployed MVP:
+
+- CloudFront distributes the SvelteKit static site and routes API paths from the same public hostname.
+- S3 stores the static web build and uploaded document objects.
+- API Gateway exposes the NestJS API over HTTP.
+- Lambda runs the NestJS API bundle.
+- DynamoDB stores document workflow records, validation status, warnings, raw OCR, and normalized extraction fields.
+- Textract performs OCR for uploaded images and small PDFs in deployed mode.
+- IAM grants the Lambda least-path access to S3, DynamoDB, and Textract for this stack.
+- GitHub Actions deploys the app through AWS OIDC using the repository secret `AWS_DEPLOY_ROLE_ARN`.
+
+The hosted site does not require visitors to have AWS credentials. Browser calls go through CloudFront to API Gateway.
+
+## Frameworks And Why
+
+- SvelteKit powers the UI because the app is small, fast, and dashboard-oriented.
+- NestJS powers the API because controllers, services, dependency injection, and adapter boundaries stay explicit.
+- TypeScript is used across the monorepo so domain contracts are shared by the API, UI, and harness.
+- Zod validates extracted JSON at runtime and gives precise warning or failure reasons.
+- AWS CDK defines the cloud stack as code and makes the deployment repeatable.
+- Vitest covers domain rules, API orchestration, chart helpers, and harness behavior.
+- Snowflake SQL models the analytics landing zone for downstream reporting.
+
+## Monorepo Layout
+
+```text
+apps/web        SvelteKit upload, detail, and dashboard UI
+apps/api        NestJS API, processing orchestration, and infrastructure adapters
+packages/domain Shared types, schemas, parser, validation, and dashboard aggregation
+harness         Golden fixture runner for extraction quality
+infra/cdk       AWS CDK stack for hosted deployment
+samples         Synthetic license text fixtures and expected JSON
+snowflake       Warehouse schema and analytics queries
+docs            Architecture, quality, deployment, and harness notes
+```
+
+## API
+
+- `POST /documents/upload`
+- `POST /documents/:id/process`
+- `GET /documents`
+- `GET /documents/:id`
+- `GET /dashboard/summary`
 
 ## Local Setup
 
-Use Node.js 22 or newer. On this Windows machine, use `npm.cmd` because PowerShell may block the `npm` script shim.
+Use Node.js 22 or newer. On Windows, use `npm.cmd` because PowerShell may block the `npm` script shim.
 
 ```powershell
 npm.cmd install
@@ -35,46 +104,21 @@ npm.cmd test
 npm.cmd run harness
 ```
 
-## Run The Backend
+Run the backend:
 
 ```powershell
 npm.cmd run dev:api
 ```
 
-The API runs on `http://localhost:3000`.
-
-## Run The Frontend
-
-In a second terminal:
+Run the frontend in a second terminal:
 
 ```powershell
 npm.cmd run dev:web
 ```
 
-The SvelteKit app runs on `http://127.0.0.1:5173`.
+The API runs on `http://localhost:3000`; the SvelteKit app runs on `http://127.0.0.1:5173`.
 
-## Process A Sample Document
-
-1. Start the API and web app.
-2. Open the SvelteKit URL.
-3. Upload one of the synthetic text files in `samples/documents`.
-4. Choose the matching document type.
-5. Submit the upload.
-6. Review normalized fields, raw JSON, validation warnings, and dashboard metrics.
-
-The local mock OCR adapter also handles binary PDFs by falling back to synthetic content based on the filename, which keeps the experiment repeatable.
-
-## API
-
-- `POST /documents/upload`
-- `POST /documents/:id/process`
-- `GET /documents`
-- `GET /documents/:id`
-- `GET /dashboard/summary`
-
-## Environment Variables
-
-Defaults:
+## Environment Defaults
 
 ```text
 APP_MODE=local
@@ -86,7 +130,7 @@ PORT=3000
 CORS_ORIGIN=http://localhost:5173
 ```
 
-AWS-only:
+AWS-only values:
 
 ```text
 AWS_REGION=us-east-2
@@ -94,94 +138,62 @@ DOCUMENT_BUCKET_NAME=
 DOCUMENT_TABLE_NAME=
 ```
 
-## AWS Setup
+## Harness Engineering
 
-The CDK stack creates:
+PolicyLens uses harness engineering in the OpenAI sense: make the repository legible to coding agents, encode constraints in versioned files, and keep quality checks runnable from one command.
 
-- S3 bucket for uploaded documents.
-- DynamoDB table for document records.
-- Lambda-hosted NestJS API.
-- HTTP API Gateway.
-- Textract permissions for synchronous OCR on tiny sample documents.
-- S3 bucket for the SvelteKit static build.
-- CloudFront distribution for the external website.
+The harness checks:
 
-Before deploying, set an AWS Budget alert and keep usage tiny.
+- Golden synthetic license documents.
+- Expected structured fields.
+- Warning categories.
+- Validation status.
+- Dashboard aggregate stability.
 
-```powershell
-npm.cmd run cdk:synth
-npm.cmd run deploy --workspace @policylens/cdk
-```
-
-The deploy output includes:
-
-- `WebsiteUrl`: the public CloudFront site URL.
-- `ApiEndpoint`: the direct API Gateway URL.
-
-The hosted SvelteKit build calls the API through the same CloudFront hostname, so no browser-side cloud credentials are needed.
-
-GitHub Actions deployment and local AWS CLI setup are documented in `docs/AWS_DEPLOYMENT.md`.
-
-Tear down after testing:
-
-```powershell
-npm.cmd run destroy --workspace @policylens/cdk
-```
-
-## Snowflake Model
-
-The `snowflake` folder contains:
-
-- `schema.sql` for `DOCUMENT_EXTRACTIONS`.
-- `analytics.sql` for dashboard-style warehouse queries.
-- `README.md` describing the raw-plus-normalized storage model.
-
-DynamoDB is useful for app workflow state. Snowflake is the better fit for analytics, portfolio reporting, warning trends, and low-confidence extraction monitoring.
-
-## Eval Harness
-
-The harness is the quality loop for the project:
+Run it with:
 
 ```powershell
 npm.cmd run harness
 ```
 
-It checks golden synthetic samples, expected structured fields, validation statuses, warning categories, and dashboard totals. This is the OpenAI-style engineering layer: a repeatable way to catch extraction regressions.
+The broader verification loop is:
 
-The broader harness-engineering layer is documented in `docs/HARNESS_ENGINEERING.md`. It includes repo-local knowledge docs, architecture checks, and quality commands designed to make the system easier for coding agents to inspect, change, and verify.
+```powershell
+npm.cmd run verify
+```
 
-## Tradeoffs
+## Snowflake Model
 
-- Mock mode keeps the local workflow repeatable; live AWS is optional.
-- Raw JSON supports auditability; normalized fields support analytics and workflows.
-- Deterministic parsing is predictable for synthetic samples; an AI extraction adapter could be added for messier real documents.
-- Backend validation is the source of truth; frontend validation only improves UX.
-- Synchronous processing is fine for this prototype; production should use async processing with retries and dead-letter queues.
-- DynamoDB works for app state; Snowflake is better for analytical reporting.
+`snowflake/schema.sql` defines `DOCUMENT_EXTRACTIONS` with normalized license fields, validation metadata, and raw extraction JSON. `snowflake/analytics.sql` includes queries for issuing-state volume, confidence, warning categories, expiration buckets, and license facts such as REAL ID, organ donor, veteran, expired, and under-21 counts.
 
-## Productionization Ideas
+DynamoDB is useful for workflow state. Snowflake is the better fit for analytics, trend monitoring, and downstream reporting.
 
-- Add authentication and RBAC.
-- Add field-level confidence.
-- Add a human review queue for low-confidence fields.
-- Add logs, tracing, metrics, alarms, and dashboards.
-- Add retry and dead-letter queue handling.
-- Move large document processing to an async queue.
-- Add PII redaction.
-- Add schema versioning for extracted JSON.
-- Add Snowflake ingestion pipeline.
-- Add dashboard filters by date, document type, state, and line of business.
-- Add cost controls and budgets for cloud services.
+## Deployment
 
-## Project Framing
+GitHub Actions deploys `main` through OIDC. Local deployment is also available with the `personal` AWS profile in `us-east-2`:
 
-PolicyLens is scoped around the shape of the system and the quality loop:
+```powershell
+$env:AWS_PROFILE = "personal"
+$env:AWS_REGION = "us-east-2"
+npm.cmd run cdk:synth
+npm.cmd run deploy --workspace @policylens/cdk -- --require-approval never
+```
 
-- Adapter boundaries for OCR, structured extraction, storage, and persistence.
-- Validation after extraction rather than trusting generated or parsed output blindly.
-- Raw-plus-normalized storage for auditability and analytics.
-- A repeatable harness that checks golden samples, warnings, and aggregate metrics.
-- Mechanical architecture checks that prevent cross-layer drift.
-- A Snowflake-ready data model for downstream reporting.
+CDK outputs:
 
-The project is not trying to be a full production platform. It is a compact experimentation surface for document ingestion, validation guardrails, and harness-driven extraction quality.
+- `WebsiteUrl`: public CloudFront URL.
+- `ApiEndpoint`: direct API Gateway URL.
+
+More details live in `docs/AWS_DEPLOYMENT.md`.
+
+## Extension Ideas
+
+- Add real barcode parsing behind a dedicated adapter.
+- Add image redaction and stricter PII retention controls.
+- Add async document processing with retry and dead-letter handling.
+- Add field-level confidence and manual adjudication for low-confidence values.
+- Add schema versioning for extraction JSON.
+- Add Snowflake ingestion from DynamoDB streams or scheduled exports.
+- Add dashboard filters by issuing state, document type, validation status, and expiration bucket.
+
+PolicyLens is not a production identity verification system. It is a compact experimentation surface for OCR, extraction contracts, validation guardrails, cloud deployment, and harness-driven quality loops.

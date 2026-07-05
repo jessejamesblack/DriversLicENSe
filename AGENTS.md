@@ -1,6 +1,6 @@
 # PolicyLens Agent Notes
 
-PolicyLens is a local-first harness-engineering experiment for insurance document ingestion, extraction validation, and dashboard analytics.
+PolicyLens is a harness-engineering experiment for synthetic driver license OCR, extraction validation, and dashboard analytics.
 
 Use these defaults unless the user says otherwise:
 
@@ -13,7 +13,7 @@ Use these defaults unless the user says otherwise:
 - UI work belongs in `apps/web`.
 - CDK infrastructure belongs in `infra/cdk`.
 - Preserve both raw extraction JSON and normalized fields.
-- Never add real customer data; use synthetic samples only.
+- Never add real identity data; use synthetic samples only.
 - Run `npm.cmd run check:architecture` after changing package boundaries or docs.
 - Before claiming cloud readiness, run `npm.cmd run cdk:synth`.
 

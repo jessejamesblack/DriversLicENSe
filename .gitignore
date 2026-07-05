@@ -9,4 +9,3 @@ build/
 coverage/
 cdk.out/
 *.log
-docs/demo-script.md

@@ -15,7 +15,7 @@ Source: https://openai.com/index/harness-engineering/
 
 ## PolicyLens Harnesses
 
-- Extraction harness: `npm.cmd run harness` checks golden samples, expected fields, warning categories, validation status, and dashboard totals.
+- Extraction harness: `npm.cmd run harness` checks golden synthetic license samples, expected fields, warning categories, validation status, and dashboard totals.
 - Architecture harness: `npm.cmd run check:architecture` checks dependency boundaries, required docs, and forbidden project-framing language.
 - Build harness: `npm.cmd run build` verifies each workspace compiles.
 - Cloud harness: `npm.cmd run cdk:synth` verifies AWS infrastructure can synthesize without deployment.
@@ -24,7 +24,7 @@ Source: https://openai.com/index/harness-engineering/
 
 - `packages/domain` contains shared types, schemas, parsing, validation, and dashboard aggregation.
 - `apps/api` exposes raw OCR, raw extraction, normalized fields, validation status, and warnings through API responses.
-- `samples` contains synthetic source documents and expected JSON fixtures.
+- `samples` contains synthetic license source documents and expected JSON fixtures.
 - `snowflake` contains the downstream warehouse shape and analytics queries.
 - `docs/ARCHITECTURE.md` describes boundaries and data flow.
 - `docs/QUALITY.md` lists the verification loop for future changes.
@@ -36,4 +36,3 @@ Source: https://openai.com/index/harness-engineering/
 - Add new extraction behavior through adapters or domain helpers, not UI-only logic.
 - Add or update a golden fixture when changing extraction behavior.
 - Update docs when architecture, commands, or adapter behavior changes.
-

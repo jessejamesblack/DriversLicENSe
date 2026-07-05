@@ -15,7 +15,7 @@ npm.cmd run cdk:synth
 - `check:architecture`: required docs, forbidden project-framing language, and cross-layer dependency boundaries.
 - `build`: TypeScript, NestJS, SvelteKit, CDK, and harness compilation.
 - `test`: unit and smoke tests for validation, parsing, API orchestration, frontend chart helpers, and eval runner behavior.
-- `harness`: golden synthetic documents, expected structured fields, validation statuses, warning categories, and aggregate dashboard totals.
+- `harness`: golden synthetic license documents, expected structured fields, validation statuses, warning categories, and aggregate dashboard totals.
 - `cdk:synth`: AWS infrastructure shape without creating cloud resources.
 
 ## When To Add Coverage
@@ -24,4 +24,3 @@ npm.cmd run cdk:synth
 - Add a unit test when a validation rule, dashboard aggregate, or adapter contract changes.
 - Add a docs update when commands, architecture, adapters, or environment variables change.
 - Add an architecture check when a boundary rule becomes important enough to enforce mechanically.
-
