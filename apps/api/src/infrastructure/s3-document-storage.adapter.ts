@@ -5,7 +5,7 @@ import { extname } from "node:path";
 export class S3DocumentStorageAdapter implements DocumentStorageAdapter {
   private readonly bucketName = requiredEnv("DOCUMENT_BUCKET_NAME");
   private readonly client = new S3Client({
-    region: process.env.AWS_REGION ?? "us-east-1"
+    region: process.env.AWS_REGION ?? "us-east-2"
   });
 
   async save(input: {
@@ -56,4 +56,3 @@ function requiredEnv(name: string): string {
 
   return value;
 }
-

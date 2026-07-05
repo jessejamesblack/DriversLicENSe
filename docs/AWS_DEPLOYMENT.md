@@ -13,29 +13,29 @@ C:\Program Files\Amazon\AWSCLIV2\aws.exe
 Use a local profile with short-lived credentials when possible:
 
 ```powershell
-& "C:\Program Files\Amazon\AWSCLIV2\aws.exe" configure sso
-& "C:\Program Files\Amazon\AWSCLIV2\aws.exe" sso login --profile policylens
-$env:AWS_PROFILE = "policylens"
+& "C:\Program Files\Amazon\AWSCLIV2\aws.exe" configure sso --profile personal
+& "C:\Program Files\Amazon\AWSCLIV2\aws.exe" sso login --profile personal
+$env:AWS_PROFILE = "personal"
 ```
 
 If SSO is not available for the account, run the standard AWS CLI configuration prompt instead:
 
 ```powershell
-& "C:\Program Files\Amazon\AWSCLIV2\aws.exe" configure --profile policylens
-$env:AWS_PROFILE = "policylens"
+& "C:\Program Files\Amazon\AWSCLIV2\aws.exe" configure --profile personal
+$env:AWS_PROFILE = "personal"
 ```
 
 Verify the active identity before deploying:
 
 ```powershell
-& "C:\Program Files\Amazon\AWSCLIV2\aws.exe" sts get-caller-identity --profile policylens
+& "C:\Program Files\Amazon\AWSCLIV2\aws.exe" sts get-caller-identity --profile personal
 ```
 
 ## Local Deploy
 
 ```powershell
-$env:AWS_PROFILE = "policylens"
-$env:AWS_REGION = "us-east-1"
+$env:AWS_PROFILE = "personal"
+$env:AWS_REGION = "us-east-2"
 npm.cmd run bootstrap --workspace @policylens/cdk
 npm.cmd run deploy --workspace @policylens/cdk -- --require-approval never
 ```

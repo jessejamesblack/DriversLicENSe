@@ -6,7 +6,7 @@ export class DynamoDocumentRepository implements DocumentRepository {
   private readonly tableName = requiredEnv("DOCUMENT_TABLE_NAME");
   private readonly client = DynamoDBDocumentClient.from(
     new DynamoDBClient({
-      region: process.env.AWS_REGION ?? "us-east-1"
+      region: process.env.AWS_REGION ?? "us-east-2"
     })
   );
 

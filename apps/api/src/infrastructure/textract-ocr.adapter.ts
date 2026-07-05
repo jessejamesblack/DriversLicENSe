@@ -3,7 +3,7 @@ import { DocumentOcrAdapter, ExtractTextInput, OcrResult } from "@policylens/dom
 
 export class TextractOcrAdapter implements DocumentOcrAdapter {
   private readonly client = new TextractClient({
-    region: process.env.AWS_REGION ?? "us-east-1"
+    region: process.env.AWS_REGION ?? "us-east-2"
   });
 
   async extractText(input: ExtractTextInput): Promise<OcrResult> {

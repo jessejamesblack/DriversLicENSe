@@ -89,7 +89,7 @@ CORS_ORIGIN=http://localhost:5173
 AWS-only:
 
 ```text
-AWS_REGION=us-east-1
+AWS_REGION=us-east-2
 DOCUMENT_BUCKET_NAME=
 DOCUMENT_TABLE_NAME=
 ```
