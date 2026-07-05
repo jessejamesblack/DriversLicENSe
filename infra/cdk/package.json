@@ -5,6 +5,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "synth": "npm run build --workspace @policylens/domain && npm run build --workspace @policylens/api && npm run build --workspace @policylens/web && npm run build && cdk synth",
+    "bootstrap": "cdk bootstrap",
     "deploy": "npm run synth && cdk deploy",
     "destroy": "cdk destroy"
   },

@@ -120,6 +120,8 @@ The deploy output includes:
 
 The hosted SvelteKit build calls the API through the same CloudFront hostname, so no browser-side cloud credentials are needed.
 
+GitHub Actions deployment and local AWS CLI setup are documented in `docs/AWS_DEPLOYMENT.md`.
+
 Tear down after testing:
 
 ```powershell
