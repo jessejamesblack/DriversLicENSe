@@ -1,6 +1,8 @@
 import { DetectDocumentTextCommand, TextractClient } from "@aws-sdk/client-textract";
 import { DocumentOcrAdapter, ExtractTextInput, OcrResult } from "@driverslicense/domain";
 
+const TEXTRACT_SYNC_MAX_BYTES = 10 * 1024 * 1024;
+
 export class TextractOcrAdapter implements DocumentOcrAdapter {
   private readonly client = new TextractClient({
     region: process.env.AWS_REGION ?? "us-east-2"
@@ -9,6 +11,13 @@ export class TextractOcrAdapter implements DocumentOcrAdapter {
   async extractText(input: ExtractTextInput): Promise<OcrResult> {
     if (!input.bytes) {
       throw new Error("Textract adapter requires document bytes for synchronous processing.");
+    }
+
+    if (input.bytes.byteLength > TEXTRACT_SYNC_MAX_BYTES) {
+      throw new Error(
+        `Textract synchronous OCR accepts documents up to 10 MB; received ${formatBytes(input.bytes.byteLength)}. ` +
+          "Resize or compress the image before processing."
+      );
     }
 
     const response = await this.client.send(
@@ -29,4 +38,8 @@ export class TextractOcrAdapter implements DocumentOcrAdapter {
       raw: response
     };
   }
+}
+
+function formatBytes(bytes: number): string {
+  return `${Math.round((bytes / (1024 * 1024)) * 10) / 10} MB`;
 }

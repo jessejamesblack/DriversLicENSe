@@ -104,7 +104,8 @@ The hosted site uses same-origin API calls through CloudFront, so visitors do no
 The stack creates:
 
 - S3 document bucket with a short lifecycle for protected uploads.
-- S3 CORS plus presigned PUT URLs so larger phone camera files can bypass API Gateway's 10 MB request limit.
+- Browser-side image preparation keeps large phone camera photos below synchronous Textract's 10 MB document limit.
+- S3 CORS plus presigned PUT URLs so larger browser uploads can bypass API Gateway's 10 MB request limit.
 - S3 website bucket for the static SvelteKit build.
 - DynamoDB document table with Streams enabled for warehouse ingestion.
 - SQS processing queue plus dead-letter queue for retries that exhaust their attempts.

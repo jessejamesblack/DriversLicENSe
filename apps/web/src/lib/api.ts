@@ -5,6 +5,7 @@ import type {
   DocumentType,
   LicenseFieldName
 } from "@driverslicense/domain";
+import { prepareDocumentFile } from "./uploadPreparation";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? (import.meta.env.DEV ? "http://localhost:3000" : "");
 const DIRECT_UPLOAD_THRESHOLD_BYTES = 8 * 1024 * 1024;
@@ -25,11 +26,13 @@ interface DirectUploadResponse {
 }
 
 export async function uploadDocument(file: File, documentType: DocumentType): Promise<UploadResponse> {
-  if (file.size >= DIRECT_UPLOAD_THRESHOLD_BYTES) {
-    return uploadDocumentDirect(file, documentType);
+  const preparedFile = await prepareDocumentFile(file);
+
+  if (preparedFile.size >= DIRECT_UPLOAD_THRESHOLD_BYTES) {
+    return uploadDocumentDirect(preparedFile, documentType);
   }
 
-  return uploadDocumentMultipart(file, documentType);
+  return uploadDocumentMultipart(preparedFile, documentType);
 }
 
 async function uploadDocumentMultipart(file: File, documentType: DocumentType): Promise<UploadResponse> {

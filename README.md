@@ -31,7 +31,8 @@ General license facts modeled by the app:
 Upload
   -> SvelteKit UI
   -> NestJS API / API Gateway for small files
-  -> presigned S3 browser upload for larger camera photos
+  -> browser image preparation for large camera photos
+  -> presigned S3 browser upload near API Gateway limits
   -> Local storage or S3
   -> Local queue or SQS with dead-letter handling
   -> Mock OCR or Amazon Textract
@@ -204,7 +205,8 @@ More details live in `docs/AWS_DEPLOYMENT.md`.
 ## Built-In Experiments
 
 - AAMVA PDF417 barcode payload parsing behind a dedicated adapter.
-- Direct-to-S3 browser uploads for larger phone camera photos.
+- Browser-side image preparation keeps large camera photos under synchronous Textract limits before upload.
+- Direct-to-S3 browser uploads keep larger files away from API Gateway's request-body limit.
 - Share-safe redacted image artifacts plus stricter raw PII retention defaults.
 - Async document processing with retry state and SQS dead-letter handling in AWS.
 - Field-level confidence and manual adjudication for low-confidence values.
