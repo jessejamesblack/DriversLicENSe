@@ -1,6 +1,6 @@
 import { CfnOutput, Duration, Fn, RemovalPolicy, Stack, StackProps } from "aws-cdk-lib";
 import { AccessLogField, AccessLogFormat } from "aws-cdk-lib/aws-apigateway";
-import { CorsHttpMethod, HttpApi, HttpStage, LogGroupLogDestination } from "aws-cdk-lib/aws-apigatewayv2";
+import { CfnStage, CorsHttpMethod, HttpApi } from "aws-cdk-lib/aws-apigatewayv2";
 import { HttpLambdaIntegration } from "aws-cdk-lib/aws-apigatewayv2-integrations";
 import {
   AllowedMethods,
@@ -139,37 +139,35 @@ export class DriversLicENSeStack extends Stack {
       removalPolicy: RemovalPolicy.DESTROY
     });
     const api = new HttpApi(this, "HttpApi", {
-      createDefaultStage: false,
       corsPreflight: {
         allowHeaders: ["content-type"],
         allowMethods: [CorsHttpMethod.GET, CorsHttpMethod.POST, CorsHttpMethod.OPTIONS],
         allowOrigins: ["*"]
       }
     });
-    new HttpStage(this, "DefaultStage", {
-      httpApi: api,
-      stageName: "$default",
-      autoDeploy: true,
-      accessLogSettings: {
-        destination: new LogGroupLogDestination(apiAccessLogGroup),
-        format: AccessLogFormat.custom(
-          JSON.stringify({
-            requestId: AccessLogField.contextRequestId(),
-            ip: AccessLogField.contextIdentitySourceIp(),
-            requestTime: AccessLogField.contextRequestTime(),
-            httpMethod: AccessLogField.contextHttpMethod(),
-            routeKey: AccessLogField.contextRouteKey(),
-            path: AccessLogField.contextPath(),
-            status: AccessLogField.contextStatus(),
-            protocol: AccessLogField.contextProtocol(),
-            responseLength: AccessLogField.contextResponseLength(),
-            integrationStatus: AccessLogField.contextIntegrationStatus(),
-            integrationError: AccessLogField.contextIntegrationErrorMessage(),
-            error: AccessLogField.contextErrorMessage()
-          })
-        )
-      }
-    });
+    const defaultStageResource = api.defaultStage?.node.defaultChild as CfnStage | undefined;
+    if (!defaultStageResource) {
+      throw new Error("HTTP API default stage was not created.");
+    }
+    defaultStageResource.accessLogSettings = {
+      destinationArn: apiAccessLogGroup.logGroupArn,
+      format: AccessLogFormat.custom(
+        JSON.stringify({
+          requestId: AccessLogField.contextRequestId(),
+          ip: AccessLogField.contextIdentitySourceIp(),
+          requestTime: AccessLogField.contextRequestTime(),
+          httpMethod: AccessLogField.contextHttpMethod(),
+          routeKey: AccessLogField.contextRouteKey(),
+          path: AccessLogField.contextPath(),
+          status: AccessLogField.contextStatus(),
+          protocol: AccessLogField.contextProtocol(),
+          responseLength: AccessLogField.contextResponseLength(),
+          integrationStatus: AccessLogField.contextIntegrationStatus(),
+          integrationError: AccessLogField.contextIntegrationErrorMessage(),
+          error: AccessLogField.contextErrorMessage()
+        })
+      ).toString()
+    };
 
     api.addRoutes({
       path: "/{proxy+}",
